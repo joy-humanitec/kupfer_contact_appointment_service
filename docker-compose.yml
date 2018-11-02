@@ -1,0 +1,66 @@
+version: "3.1"
+
+services:
+
+  postgres_crm_service:
+    container_name: postgres_crm_service
+    healthcheck:
+      test: "pg_isready -h localhost -p 5432 -q -U postgres"
+      interval: 3s
+      timeout: 5s
+      retries: 5
+    image: postgres:10.4
+    environment:
+      POSTGRES_DB: crm_service
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    volumes:
+      - /var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    restart: always
+
+  crm_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: bash /code/docker-entrypoint-dev.sh
+    container_name: crm_service
+    image: crm_service
+    volumes:
+      - .:/code
+      - static-content:/static
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres_crm_service
+    environment:
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      CORS_ORIGIN_WHITELIST: localhost,127.0.0.1
+      DATABASE_ENGINE: "postgresql"
+      DATABASE_NAME: "crm_service"
+      DATABASE_USER: "root"
+      DATABASE_PASSWORD: "root"
+      DATABASE_HOST: "postgres_crm_service"
+      DATABASE_PORT: "5432"
+      DEBUG: "True"
+      JWT_PUBLIC_KEY_RSA_ACTIVITYAPI: |-
+        -----BEGIN PUBLIC KEY-----
+        MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALFc9NFZaOaSwUMPNektbtJqEjYZ6IRB
+        qhqvJu1hKPYn9HYd75c0gIDYHJ9lb7QwQvg44aO27104rDK0xSstzL0CAwEAAQ==
+        -----END PUBLIC KEY-----
+      STATIC_URL: http://localhost:8000/
+
+  nginx_crm_service:
+    image: nginx:latest
+    container_name: nginx_crm_service
+    ports:
+      - "8000:80"
+    volumes:
+      - static-content:/usr/share/nginx/html/
+    depends_on:
+      - crm_service
+    command: [nginx, '-g', 'daemon off;']
+
+volumes:
+  static-content:
