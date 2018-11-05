@@ -7,8 +7,9 @@ services:
       - POSTGRES_DB=db
 
 pipeline:
+
   test:
-    image: python:3.7
+    image: python:3.6
     commands:
       - bash scripts/tcp-port-wait.sh $${DATABASE_HOST} $${DATABASE_PORT}
       - bash scripts/run-tests.sh --ci
@@ -21,12 +22,33 @@ pipeline:
       - DATABASE_PORT=5432
     when:
       event: [pull_request, push, tag]
+
   build-docker-image-tag:
     image: plugins/docker
     insecure: true
     registry: registry.tola.io
     repo: registry.tola.io/toladata/crm_service
     file: Dockerfile
+    auto_tag: true
+    secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
+    when:
+      event: [tag]
+      status: [success]
+
+  prebuild-docker-static-image:
+    image: python:3.6
+    commands:
+      - bash scripts/run-collectstatic.sh --install-deps
+    when:
+      event: [tag]
+      status: [success]
+
+  build-docker-static-image-tag:
+    image: plugins/docker
+    insecure: true
+    registry: registry.tola.io
+    repo: registry.tola.io/toladata/crm_service_static
+    dockerfile: Dockerfile.nginx
     auto_tag: true
     secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
     when:
