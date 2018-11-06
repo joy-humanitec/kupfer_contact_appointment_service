@@ -30,6 +30,7 @@ pipeline:
     repo: registry.tola.io/toladata/crm_service
     file: Dockerfile
     auto_tag: true
+    force_tag: true
     secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
     when:
       event: [tag]
@@ -50,6 +51,7 @@ pipeline:
     repo: registry.tola.io/toladata/crm_service_static
     dockerfile: Dockerfile.nginx
     auto_tag: true
+    force_tag: true
     secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
     when:
       event: [tag]
