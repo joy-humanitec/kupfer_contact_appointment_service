@@ -37,6 +37,7 @@ INSTALLED_APPS_DJANGO = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
 ]
 
 INSTALLED_APPS_THIRD_PARTIES = [
@@ -51,6 +52,7 @@ INSTALLED_APPS_THIRD_PARTIES = [
 
 INSTALLED_APPS_LOCAL = [
     'crm',
+    'contact'
 ]
 
 INSTALLED_APPS = INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + \
@@ -154,7 +156,7 @@ REST_FRAMEWORK = {
         'oauth2_provider_jwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'api.permissions.AllowOptionsAuthentication',
+        'crm.permissions.AllowOptionsAuthentication',
     )
 }
 
