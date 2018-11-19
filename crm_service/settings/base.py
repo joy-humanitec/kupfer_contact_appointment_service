@@ -52,7 +52,8 @@ INSTALLED_APPS_THIRD_PARTIES = [
 
 INSTALLED_APPS_LOCAL = [
     'crm',
-    'contact'
+    'contact',
+    'appointment',
 ]
 
 INSTALLED_APPS = INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + \
@@ -128,7 +129,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Berlin'
 
 USE_I18N = True
 

@@ -1,0 +1,1 @@
+Erinnerung an Ihren Termin in {{timedelta}} Tagen mit {{organization}} am {{appointment_date}}
