@@ -1,0 +1,12 @@
+Lieber Kunde,
+
+wir möchten Sie an folgenden Termin mit uns erinnern:
+{{appointment_date}}
+{{appointment_start_time}} – {{appointment_end_time}} Uhr
+{{project_address}}
+
+Falls Sie diesen Termin nicht wahrnehmen können oder ihn verschieben
+möchten, kontaktieren Sie bitte unser Büro: {{organization_phone_number}}.
+
+Mit freundlichen Grüßen
+Ihr {{organization}} Team
