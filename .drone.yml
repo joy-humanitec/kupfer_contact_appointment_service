@@ -38,7 +38,7 @@ pipeline:
   prebuild-docker-static-image:
     image: python:3.6
     commands:
-      - bash scripts/run-collectstatic.sh --install-deps
+      - bash scripts/run-collectstatic.sh
     when:
       event: [tag]
       status: [success]
