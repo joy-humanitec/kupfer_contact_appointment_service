@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+from unittest.mock import Mock, patch
 import uuid
 
 from django.test import TestCase
-from mock import Mock, patch
 from rest_framework.test import APIRequestFactory
 from rest_framework.request import Request
 
