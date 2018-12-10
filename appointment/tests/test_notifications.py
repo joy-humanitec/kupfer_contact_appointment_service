@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from ..notifications import AppointmentNotificationEMail
 from datetime import datetime, timedelta
 import uuid
@@ -25,10 +24,10 @@ class AppointmentNotificationEmailTest(TestCase):
         invitee = uuid.uuid4()
 
         appointment = Appointment.objects.create(
-            owner=self.user_uuid, name=u"Test Name 2",
+            owner=self.user_uuid, name="Test Name 2",
             start_date=datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
             end_date=datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
-            address=u"Oderberger Straße 16A", invitee_uuids=[invitee],
+            address="Oderberger Straße 16A", invitee_uuids=[invitee],
             notes="Test note", type=["Test Type"],
             contact_uuid=str(contact.uuid)
         )

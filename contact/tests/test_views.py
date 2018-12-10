@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 import uuid
 
@@ -40,7 +39,7 @@ class ContactListViewsTest(TestCase):
             addresses=[
                 {
                     'type': 'billing',
-                    'street': u'Bówie St',
+                    'street': 'Bówie St',
                     'house_number': '22',
                     'postal_code': '78703',
                     'city': 'Austin',
@@ -73,7 +72,7 @@ class ContactListViewsTest(TestCase):
             [
                 {
                     'type': 'billing',
-                    'street': u'Bówie St',
+                    'street': 'Bówie St',
                     'house_number': '22',
                     'postal_code': '78703',
                     'city': 'Austin',
@@ -101,7 +100,7 @@ class ContactListViewsTest(TestCase):
             addresses=[
                 {
                     'type': 'billing',
-                    'street': u'Bówie St',
+                    'street': 'Bówie St',
                     'house_number': '22',
                     'postal_code': '78703',
                     'city': 'Austin',
@@ -130,7 +129,7 @@ class ContactListViewsTest(TestCase):
             addresses=[
                 {
                     'type': 'billing',
-                    'street': u'Bówie St',
+                    'street': 'Bówie St',
                     'house_number': '22',
                     'postal_code': '78703',
                     'city': 'Austin',
@@ -271,8 +270,8 @@ class ContactCreateViewsTest(TestCase):
 
     def test_create_contact_minimal(self):
         data = {
-            'first_name': u'Máx',
-            'last_name': u'Cöoper',
+            'first_name': 'Máx',
+            'last_name': 'Cöoper',
             'organization_uuid': 'ignore_this',
             'workflowlevel1_uuids': [self.wflvl1],
         }
@@ -293,8 +292,8 @@ class ContactCreateViewsTest(TestCase):
 
     def test_create_contact_org_and_user_set_by_jwt(self):
         data = {
-            'first_name': u'Máx',
-            'last_name': u'Cöoper',
+            'first_name': 'Máx',
+            'last_name': 'Cöoper',
             'user_uuid': 'Test',
             'organization_uuid': 'ignore_this',
             'workflowlevel1_uuids': [self.wflvl1],
@@ -318,8 +317,8 @@ class ContactCreateViewsTest(TestCase):
         wflvl1_other = str(uuid.uuid4())
 
         data = {
-            'first_name': u'Máx',
-            'last_name': u'Cöoper',
+            'first_name': 'Máx',
+            'last_name': 'Cöoper',
             'organization_uuid': 'ignore_this',
             'workflowlevel1_uuids': [self.wflvl1,
                                      wflvl1_other],
@@ -339,8 +338,8 @@ class ContactCreateViewsTest(TestCase):
         wflvl1_extra = str(uuid.uuid4())
 
         data = {
-            'first_name': u'Máx',
-            'last_name': u'Cöoper',
+            'first_name': 'Máx',
+            'last_name': 'Cöoper',
             'workflowlevel1_uuids': [wflvl1_other, wflvl1_extra,
                                      self.wflvl1],
         }
@@ -360,7 +359,7 @@ class ContactCreateViewsTest(TestCase):
 
         data = {
             'first_name': 'Julio',
-            'middle_name': u'José',
+            'middle_name': 'José',
             'last_name': 'Iglesias',
             'title': 'mr',
             'contact_type': 'personnel',
@@ -379,7 +378,7 @@ class ContactCreateViewsTest(TestCase):
             'siteprofile_uuids': [str(siteprofile_uuid)],
             'emails': [],
             'phones': [{'type': 'office', 'number': '123'}],
-            'notes': u'I am the Spanish Gigolò',
+            'notes': 'I am the Spanish Gigolò',
             'workflowlevel1_uuids': [self.wflvl1],
             'workflowlevel2_uuids': [self.wflvl2],
         }
@@ -615,7 +614,7 @@ class ContactUpdateViewsTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['last_name'],
-                         [u'This field may not be blank.'])
+                         ['This field may not be blank.'])
 
     def test_update_contact_fails_invalid_phone_schema(self):
         contact = mfactories.Contact(

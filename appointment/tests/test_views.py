@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime
 import json
 import re
@@ -209,7 +208,7 @@ class AppointmentListViewsTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data,
-                         [u'owner field can only have value "me" or a valid '
+                         ['owner field can only have value "me" or a valid '
                           'User UUID'])
 
     def test_list_appointments_filter_by_wflvl2(self):
@@ -768,11 +767,11 @@ class AppointmentCreateViewsTest(TestCase):
 
     def test_create_appointment_minimal(self):
         data = {
-            'name': u'Max Mustermann',
+            'name': 'Max Mustermann',
             'start_date': datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
             'end_date': datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
-            'address': u'Teststreet 123',
-            'type': [u'Test Type']
+            'address': 'Teststreet 123',
+            'type': ['Test Type']
         }
 
         request = self.factory.post('', data)
@@ -799,14 +798,14 @@ class AppointmentCreateViewsTest(TestCase):
         siteprofile_uuid = uuid.uuid4()
 
         data = {
-            'name': u'Max Mustermann',
+            'name': 'Max Mustermann',
             'start_date': start_date,
             'end_date': end_date,
-            'address': u'Teststreet 123',
+            'address': 'Teststreet 123',
             'siteprofile_uuid': str(siteprofile_uuid),
             'invitee_uuids': invitee_uuids,
-            'type': [u'Test Type'],
-            'notes': u'Please help me, youre my only hope',
+            'type': ['Test Type'],
+            'notes': 'Please help me, youre my only hope',
             'workflowlevel2_uuids': [wflvl2_uuid],
             'contact_uuid': contact_uuid,
         }
@@ -846,11 +845,11 @@ class AppointmentCreateViewsTest(TestCase):
             .strftime("%Y-%m-%dT%H:%M:%S+01:00")
 
         data = {
-            'name': u'Max Mustermann',
+            'name': 'Max Mustermann',
             'start_date': start_date,
             'end_date': end_date,
-            'type': [u'Test Type'],
-            'address': u'Teststreet 123',
+            'type': ['Test Type'],
+            'address': 'Teststreet 123',
             'organization_uuid': str(uuid.uuid4()),
         }
         request = self.factory.post('', data)
@@ -860,7 +859,7 @@ class AppointmentCreateViewsTest(TestCase):
         response = view(request)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data, {'organization_uuid': [
-            u"The Organization cannot be different than user's organization"]})
+            "The Organization cannot be different than user's organization"]})
 
     def test_create_appointment_empty_org(self):
         start_date = datetime(2018, 1, 1, 12, 15)\
@@ -869,11 +868,11 @@ class AppointmentCreateViewsTest(TestCase):
             .strftime("%Y-%m-%dT%H:%M:%S+01:00")
 
         data = {
-            'name': u'Max Mustermann',
+            'name': 'Max Mustermann',
             'start_date': start_date,
             'end_date': end_date,
-            'type': [u'Test Type'],
-            'address': u'Teststreet 123',
+            'type': ['Test Type'],
+            'address': 'Teststreet 123',
         }
         request = self.factory.post('', data)
         request.user = self.user
@@ -893,11 +892,11 @@ class AppointmentCreateViewsTest(TestCase):
 
     def test_create_appointment_fails_empty_field(self):
         data = {
-            'name': u'',
+            'name': '',
             'start_date': datetime(2018, 1, 1, 12, 15),
             'end_date': datetime(2018, 1, 1, 12, 30),
-            'address': u'Teststreet 123',
-            'type': [u'Test Type']
+            'address': 'Teststreet 123',
+            'type': ['Test Type']
         }
 
         request = self.factory.post('', data)
@@ -909,11 +908,11 @@ class AppointmentCreateViewsTest(TestCase):
 
     def test_create_appointment_fails_invalid_date_schema(self):
         data = {
-            'name': u'',
-            'start_date': u'2018.1.2.',
+            'name': '',
+            'start_date': '2018.1.2.',
             'end_date': datetime(2018, 1, 1, 12, 30),
-            'address': u'Teststreet 123',
-            'type': [u'Test Type']
+            'address': 'Teststreet 123',
+            'type': ['Test Type']
         }
 
         request = self.factory.post('', data)
@@ -925,11 +924,11 @@ class AppointmentCreateViewsTest(TestCase):
 
     def test_create_appointment_fails_date_range(self):
         data = {
-            'name': u'',
+            'name': '',
             'start_date': datetime(2018, 1, 1, 12, 15),
             'end_date': datetime(2018, 1, 1, 11, 30),
-            'address': u'Teststreet 123',
-            'type': [u'Test Type']
+            'address': 'Teststreet 123',
+            'type': ['Test Type']
         }
 
         request = self.factory.post('', data)
@@ -941,10 +940,10 @@ class AppointmentCreateViewsTest(TestCase):
 
     def test_create_appointment_fails_empty_type_array(self):
         data = {
-            'name': u'Max Mustermann',
+            'name': 'Max Mustermann',
             'start_date': datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
             'end_date': datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
-            'address': u'Teststreet 123',
+            'address': 'Teststreet 123',
             'type': [],
         }
 
@@ -956,7 +955,7 @@ class AppointmentCreateViewsTest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.data,
-            {'type': [u'type must be an array of one or more string elements']}
+            {'type': ['type must be an array of one or more string elements']}
         )
 
 
@@ -982,11 +981,11 @@ class AppointmentUpdateViewsTest(TestCase):
         contact_uuid = str(uuid.uuid4())
         siteprofile_uuid = uuid.uuid4()
         data = {
-            'name': u'Max Mustermann',
+            'name': 'Max Mustermann',
             'start_date': datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
             'siteprofile_uuid': str(siteprofile_uuid),
             'invitee_uuids': invitee_uuids,
-            'notes': u'Please help me, youre my only hope',
+            'notes': 'Please help me, youre my only hope',
             'contact_uuid': contact_uuid,
         }
 
@@ -1011,8 +1010,8 @@ class AppointmentUpdateViewsTest(TestCase):
         wflvl2_uuid = uuid.uuid4()
 
         data = {
-            'name': u'Max Mustermann',
-            'notes': u'Please help me, youre my only hope',
+            'name': 'Max Mustermann',
+            'notes': 'Please help me, youre my only hope',
             'contact_uuid': str(contact_uuid),
             'workflowlevel2_uuids': [str(wflvl2_uuid)]
         }
@@ -1041,7 +1040,7 @@ class AppointmentUpdateViewsTest(TestCase):
         )
 
         data = {
-            'name': u'Other Name',
+            'name': 'Other Name',
         }
 
         request = self.factory.post('', data)
@@ -1062,7 +1061,7 @@ class AppointmentUpdateViewsTest(TestCase):
         )
 
         data = {
-            'name': u'Test Name',
+            'name': 'Test Name',
         }
         request = self.factory.post('', data)
         request.user = self.user
@@ -1078,7 +1077,7 @@ class AppointmentUpdateViewsTest(TestCase):
         )
 
         data = {
-            'name': u'',
+            'name': '',
         }
 
         request = self.factory.post('', data)
@@ -1095,7 +1094,7 @@ class AppointmentUpdateViewsTest(TestCase):
         )
 
         data = {
-            'end_date': u'2018.1.1.'
+            'end_date': '2018.1.1.'
         }
         request = self.factory.post('', data)
         request.user = self.user
@@ -1128,7 +1127,7 @@ class AppointmentNotificationCreateViewsTest(TestCase):
         appointment = mfactories.Appointment()
 
         data = {
-            'recipient': u'test@example.com',
+            'recipient': 'test@example.com',
             'appointment': reverse('appointment-detail',
                                    kwargs={'pk': appointment.pk})
         }
@@ -1149,13 +1148,13 @@ class AppointmentNotificationCreateViewsTest(TestCase):
         appointment = mfactories.Appointment()
 
         data = {
-            'recipient': u'test@example.com',
-            'message': u'This is a new message',
-            'subject': u'New Subject',
+            'recipient': 'test@example.com',
+            'message': 'This is a new message',
+            'subject': 'New Subject',
             'appointment': reverse('appointment-detail',
                                    kwargs={'pk': appointment.pk}),
-            'org_phone': u'+123 456 78',
-            'org_name': u'Your org'
+            'org_phone': '+123 456 78',
+            'org_name': 'Your org'
         }
 
         request = self.factory.post('', data)
@@ -1178,7 +1177,7 @@ class AppointmentNotificationCreateViewsTest(TestCase):
 
     def test_create_appointment_notification_fails_no_recipient(self):
         data = {
-            'recipient': u'test@example.org'
+            'recipient': 'test@example.org'
         }
 
         request = self.factory.post('', data)
@@ -1192,7 +1191,7 @@ class AppointmentNotificationCreateViewsTest(TestCase):
         appointment = mfactories.Appointment()
 
         data = {
-            'recipient': u'test@example.com',
+            'recipient': 'test@example.com',
             'appointment': reverse('appointment-detail',
                                    kwargs={'pk': appointment.pk}),
             'send_notification': True
@@ -1287,9 +1286,9 @@ class AppointmentNotificationUpdateViewsTest(TestCase):
         )
 
         data = {
-            'recipient': u'test@example.com',
-            'message': u'This is a new message',
-            'subject': u'New Subject',
+            'recipient': 'test@example.com',
+            'message': 'This is a new message',
+            'subject': 'New Subject',
         }
 
         request = self.factory.post('', data)
@@ -1311,7 +1310,7 @@ class AppointmentNotificationUpdateViewsTest(TestCase):
         )
 
         data = {
-            'recipient': u'',
+            'recipient': '',
             'appointment':
                 reverse(
                     'appointment-detail',

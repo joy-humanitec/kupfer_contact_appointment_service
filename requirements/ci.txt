@@ -4,4 +4,3 @@ bandit==1.5.1
 coverage==4.5.1
 factory_boy==2.9.2
 flake8==3.5.0
-mock==2.0.0

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import uuid
 
 from django.contrib.postgres.fields import ArrayField, HStoreField
@@ -109,4 +107,4 @@ class Contact(models.Model):
                                       help_text='List of Workflowlevel2 UUIDs')
 
     def __str__(self):
-        return u'{} {}'.format(self.first_name, self.last_name)
+        return f"{self.first_name} {self.last_name}"
