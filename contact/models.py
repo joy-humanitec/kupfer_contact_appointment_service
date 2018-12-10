@@ -3,10 +3,9 @@ from __future__ import unicode_literals
 import uuid
 
 from django.contrib.postgres.fields import ArrayField, HStoreField
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
 from django.db import models
-from voluptuous import Schema, Any, All, Length
+
+from .validators import validate_emails, validate_phones, validate_addresses
 
 TITLE_CHOICES = (
     ('mr', 'Mr.'),
@@ -80,7 +79,8 @@ class Contact(models.Model):
                            city (string),
                            country (string)
                            """.format(", ".join([k for k in
-                                                 ADDRESS_TYPE_CHOICES])))
+                                                 ADDRESS_TYPE_CHOICES])),
+                           validators=[validate_addresses])
     siteprofile_uuids = ArrayField(models.UUIDField(), blank=True, null=True,
                                    help_text='List of SiteProfile UUIDs')
     emails = ArrayField(HStoreField(), blank=True, null=True,
@@ -89,14 +89,16 @@ class Contact(models.Model):
                                type (string - Choices: {}),
                                email (string)
                                """.format(", ".join([k for k in
-                                                     EMAIL_TYPE_CHOICES])))
+                                                     EMAIL_TYPE_CHOICES])),
+                        validators=[validate_emails])
     phones = ArrayField(HStoreField(), blank=True, null=True,
                         help_text="""
                                List of 'phone' objects with the structure:
                                type (string - Choices: {}),
                                number (string)
                                """.format(", ".join([k for k in
-                                                     PHONE_TYPE_CHOICES])))
+                                                     PHONE_TYPE_CHOICES])),
+                        validators=[validate_phones])
     notes = models.TextField(blank=True, null=True)
     organization_uuid = models.CharField(max_length=36, blank=True, null=True,
                                          verbose_name='Organization UUID')
@@ -105,55 +107,6 @@ class Contact(models.Model):
     workflowlevel2_uuids = ArrayField(models.CharField(max_length=36),
                                       blank=True, null=True,
                                       help_text='List of Workflowlevel2 UUIDs')
-
-    def _validate_address(self, address):
-        schema = Schema({
-            'type': All(Any(str), Any(*ADDRESS_TYPE_CHOICES)),
-            'street': All(Any(str), Length(max=100)),
-            'house_number': All(Any(str), Length(max=20)),
-            'postal_code': All(Any(str), Length(max=20)),
-            'city': All(Any(str), Length(max=85)),
-            'country': All(Any(str), Length(max=50)),
-        })
-        schema(address)
-
-    def _validate_email(self, email):
-        schema = Schema({
-            'type': All(Any(str), Any(*EMAIL_TYPE_CHOICES)),
-            'email': All(Any(str), Length(min=3, max=254)),
-        })
-        validate_email(email['email'])
-        schema(email)
-
-    def _validate_phone(self, phone):
-        schema = Schema({
-            'type': All(Any(str), Any(*PHONE_TYPE_CHOICES)),
-            'number': All(Any(str), Length(min=3, max=20)),
-        })
-        schema(phone)
-
-    def clean_fields(self, exclude=None):
-        super(Contact, self).clean_fields(exclude=exclude)
-        if self.addresses:
-            for address in self.addresses:
-                try:
-                    self._validate_address(address)
-                except Exception as error:
-                    raise ValidationError(error)
-
-        if self.emails:
-            for email in self.emails:
-                try:
-                    self._validate_email(email)
-                except Exception as error:
-                    raise ValidationError(error)
-
-        if self.phones:
-            for phone in self.phones:
-                try:
-                    self._validate_phone(phone)
-                except Exception as error:
-                    raise ValidationError(error)
 
     def __str__(self):
         return u'{} {}'.format(self.first_name, self.last_name)

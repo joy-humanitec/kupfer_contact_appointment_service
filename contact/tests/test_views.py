@@ -7,7 +7,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 from . import model_factories as mfactories
-from ..models import Contact
+from ..models import Contact, EMAIL_TYPE_CHOICES, PHONE_TYPE_CHOICES
 from ..views import ContactViewSet
 
 
@@ -397,6 +397,77 @@ class ContactCreateViewsTest(TestCase):
         data['siteprofile_uuids'] = [siteprofile_uuid]
         contact = Contact.objects.get(pk=response.data['id'])
         self.assertDictContainsSubset(data, contact.__dict__)
+
+    def test_create_with_invalid_email(self):
+        data = {
+            'first_name': u'Máx',
+            'last_name': u'Cöoper',
+            'organization_uuid': 'ignore_this',
+            'workflowlevel1_uuids': [self.wflvl1],
+            'emails': [{'type': EMAIL_TYPE_CHOICES[0], 'email': 'bad'}]
+        }
+        request = self.factory.post(  # trick to pass a list in a payload
+            '', json.dumps(data), content_type='application/json')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'post': 'create'})
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            str(response.data['emails'][0]), 'Enter a valid email address.')
+        self.assertEqual(response.data['emails'][0].code, 'invalid')
+
+    def test_create_with_invalid_phone(self):
+        data = {
+            'first_name': u'Máx',
+            'last_name': u'Cöoper',
+            'organization_uuid': 'ignore_this',
+            'workflowlevel1_uuids': [self.wflvl1],
+            'phones': [{'type': PHONE_TYPE_CHOICES[0], 'number': '01'}]
+        }
+        request = self.factory.post(  # trick to pass a list in a payload
+            '', json.dumps(data), content_type='application/json')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'post': 'create'})
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(
+            ("Invalid value: {'type': 'office', 'number': '01'}. List of "
+             "'phone' objects with the structure:"),
+            str(response.data['phones'][0]),
+        )
+        self.assertEqual(response.data['phones'][0].code, 'invalid')
+
+    def test_create_with_invalid_address(self):
+        data = {
+            'first_name': u'Máx',
+            'last_name': u'Cöoper',
+            'organization_uuid': 'ignore_this',
+            'workflowlevel1_uuids': [self.wflvl1],
+            'addresses': [
+                {
+                    'type': 'FAKE',
+                    'street': 'Oderberger Straße',
+                    'house_number': '16A',
+                    'postal_code': '10435',
+                    'city': 'Berlin',
+                    'country': 'Germany',
+                },
+            ]
+        }
+        request = self.factory.post(  # trick to pass a list in a payload
+            '', json.dumps(data), content_type='application/json')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'post': 'create'})
+        response = view(request)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(
+            "List of 'address' objects with the structure:",
+            str(response.data['addresses'][0]),
+        )
+        self.assertEqual(response.data['addresses'][0].code, 'invalid')
 
     def test_create_contacts_anonymoususer(self):
         request = self.factory.post('', {})
