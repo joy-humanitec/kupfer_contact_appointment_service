@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import logging
 import uuid
 
@@ -46,7 +45,7 @@ class Appointment(models.Model):
             raise ValidationError("Start date cannot be later than end date.")
 
     def __str__(self):
-        return u'{} {}'.format(self.name, self.start_date)
+        return f'{self.name} {self.start_date}'
 
 
 class AppointmentNotification(models.Model):
@@ -68,4 +67,4 @@ class AppointmentNotification(models.Model):
         validate_email(self.recipient)
 
     def __str__(self):
-        return u'{} ({})'.format(self.appointment, self.sent_at)
+        return f'{self.appointment} ({self.sent_at})'

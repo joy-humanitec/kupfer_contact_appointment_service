@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import uuid
 
 from django.core.exceptions import ValidationError
@@ -213,10 +212,10 @@ class ContactTest(TestCase):
             }
         ]).full_clean()
 
-    def test_unicode_representation(self):
+    def test_string_representation(self):
         contact = Contact(
             user_uuid=self.user_uuid,
-            first_name='John',
-            last_name='Misty',
+            first_name='Jóhn',
+            last_name='Mïsty',
         )
-        self.assertEqual(str(contact), 'John Misty')
+        self.assertEqual(str(contact), 'Jóhn Mïsty')

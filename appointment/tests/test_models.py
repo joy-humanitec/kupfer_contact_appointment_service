@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime
 import uuid
 
@@ -116,7 +115,7 @@ class AppointmentTest(TestCase):
         )
 
         self.assertRaisesWithMessageDict(
-            ValidationError, {'address': [u'This field cannot be blank.']},
+            ValidationError, {'address': ['This field cannot be blank.']},
             appointment.save)
 
     def test_appointment_save_fails_missing_type(self):
@@ -129,7 +128,7 @@ class AppointmentTest(TestCase):
         )
 
         self.assertRaisesWithMessageDict(
-            ValidationError, {'type': [u'This field cannot be null.']},
+            ValidationError, {'type': ['This field cannot be null.']},
             appointment.save)
 
     def test_appointment_save_fails_wrong_date_format_start_date(self):
