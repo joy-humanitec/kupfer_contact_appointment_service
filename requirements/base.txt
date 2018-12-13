@@ -6,3 +6,4 @@ git+https://github.com/Humanitec/django-oauth-toolkit-jwt@v0.4.0#egg=django-oaut
 djangorestframework==3.8.2
 psycopg2-binary==2.7.5
 voluptuous==0.11.5
+git+https://HumanitecBot:33ec3c44befb922fc414712c0a038db39bed75f8@github.com/Humanitec/search-service-integration.git@v1.0#egg=search-service-integration
