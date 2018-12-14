@@ -166,3 +166,36 @@ REST_FRAMEWORK = {
 JWT_AUTH_DISABLED = True
 JWT_ALLOWED_ISSUER = 'activityapi'
 JWT_PUBLIC_KEY_RSA_ACTIVITYAPI = os.getenv('JWT_PUBLIC_KEY_RSA_ACTIVITYAPI')
+
+
+# Logging
+# https://docs.djangoproject.com/en/2.0/topics/logging/#configuring-logging
+# more colors: https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[%(asctime)s] [%(levelname)s] \033[31;1;4m[%(name)s]\033[0m [%(thread)d] %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'contact': {
+            'handlers': ['console'],
+            'level': os.getenv('LOG_LEVEL', 'DEBUG'),
+            'propagate': False,
+        },
+    },
+}
