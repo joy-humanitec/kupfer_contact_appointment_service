@@ -12,4 +12,5 @@ echo $(date -u) "- Creating admin user"
 python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(email='admin@example.com').delete(); User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
 
 echo $(date -u) "- Running the server"
-gunicorn crm_service.wsgi --config crm_service/gunicorn_conf.py --reload
+gunicorn crm_service.wsgi --config crm_service/gunicorn_conf.py -w 2 \
+ --timeout 120 --reload --log-level debug
