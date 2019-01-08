@@ -48,6 +48,9 @@ INSTALLED_APPS_THIRD_PARTIES = [
     # Health check
     'health_check',
     'health_check.db',
+
+    # Swagger/OpenAPI
+    'drf_yasg',
 ]
 
 INSTALLED_APPS_LOCAL = [
