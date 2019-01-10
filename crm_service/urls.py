@@ -25,7 +25,7 @@ urlpatterns = [
          name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
     path('health_check/', include('health_check.urls')),
-    path(r'api/', include('crm.urls')),
+    path(r'', include('crm.urls')),
 ]
 
 urlpatterns += staticfiles_urlpatterns()
