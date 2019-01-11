@@ -28,7 +28,7 @@ services:
     volumes:
       - .:/code
     ports:
-      - "8002:80"
+      - "8002:8080"
     depends_on:
       - postgres_crm_service
     environment:
