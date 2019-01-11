@@ -13,7 +13,7 @@ class TestGunicornConf(TestCase):
         self.user = uuid.uuid4()
 
     def test_config_values(self):
-        self.assertEqual(gunicorn_conf.bind, '0.0.0.0:80')
+        self.assertEqual(gunicorn_conf.bind, '0.0.0.0:8080')
         self.assertEqual(gunicorn_conf.limit_request_field_size, 0)
         self.assertEqual(gunicorn_conf.limit_request_line, 0)
 
