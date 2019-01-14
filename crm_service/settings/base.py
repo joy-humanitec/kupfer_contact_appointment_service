@@ -205,3 +205,8 @@ LOGGING = {
         },
     },
 }
+
+
+# Search Service
+
+SEARCH_SERVICE_ENABLED = True if os.getenv('SEARCH_SERVICE_ENABLED') == 'True' else False
