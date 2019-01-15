@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from datetime import datetime
 import json
 import re
@@ -35,7 +36,8 @@ class AppointmentListViewsTest(TestCase):
         view = AppointmentViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, [])
+        self.assertEqual(response.data, OrderedDict(
+            [('next', None), ('previous', None), ('results', [])]))
 
     def test_list_appointments(self):
         contact_uuid = str(uuid.uuid4())
@@ -56,9 +58,9 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
-        appointment_data = response.data[0]
+        appointment_data = response.data['results'][0]
         self.assertTrue('id' in appointment_data)
         self.assertEqual(appointment_data['name'], 'John Tester')
         self.assertEqual(appointment_data['workflowlevel2_uuids'],
@@ -86,7 +88,7 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_appointments_other_user_diff_org(self):
         user_other = uuid.uuid4()
@@ -106,7 +108,7 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
     def test_list_appointments_filter_by_contactuuid(self):
         mfactories.Appointment(name='Other appointment')
@@ -134,12 +136,12 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data['results']), 2)
 
-        appointment_data = response.data[0]
+        appointment_data = response.data['results'][0]
         self.assertEqual(appointment_data['contact_uuid'], contact_uuid)
-        self.assertEqual(response.data[0]['name'], 'Appointment 0')
-        self.assertEqual(response.data[1]['name'], 'Appointment 1')
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 0')
+        self.assertEqual(response.data['results'][1]['name'], 'Appointment 1')
 
     def test_list_appointments_filter_by_owner_me(self):
         user_other = uuid.uuid4()
@@ -170,8 +172,8 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], 'Appointment 2')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 2')
 
     def test_list_appointments_filter_by_owner_other(self):
         user_other = uuid.uuid4()
@@ -196,8 +198,8 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], 'Appointment 1')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 1')
 
     def test_list_appointments_filter_by_owner_not_valid_uuid(self):
         request = self.factory.get('?owner=abc')
@@ -229,8 +231,8 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], 'Appointment 0')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 0')
 
     def test_list_appointments_filter_by_unexisting_wflvl2(self):
         wflvl2_uuid = uuid.uuid4()
@@ -250,7 +252,7 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
     def test_list_appointments_filter_by_invalid_wflvl2(self):
         wflvl2_uuid = uuid.uuid4()
@@ -299,13 +301,13 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 4)
+        self.assertEqual(len(response.data['results']), 4)
 
-        appointment_data = response.data[0]
+        appointment_data = response.data['results'][0]
         self.assertEqual(appointment_data['contact_uuid'], contact_uuid)
-        self.assertEqual(response.data[0]['name'], 'Appointment 2')
-        self.assertEqual(response.data[1]['name'], 'Appointment 1')
-        self.assertEqual(response.data[2]['name'], 'Appointment 0')
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 2')
+        self.assertEqual(response.data['results'][1]['name'], 'Appointment 1')
+        self.assertEqual(response.data['results'][2]['name'], 'Appointment 0')
 
     def test_list_appointments_anonymoususer(self):
         request_get = self.factory.get('')
@@ -450,8 +452,8 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], 'Appointment 1')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 1')
 
     def test_list_appointments_filter_by_invitee_uuid(self):
         user_other = uuid.uuid4()
@@ -479,8 +481,8 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], 'Appointment 1')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 1')
 
     def test_list_appointments_filter_by_start_date_gte(self):
         mfactories.Appointment(
@@ -505,8 +507,8 @@ class AppointmentListViewsTest(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], 'Appointment 1')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 1')
 
     def test_list_appointments_filter_by_start_date_lte(self):
         mfactories.Appointment(
@@ -530,8 +532,8 @@ class AppointmentListViewsTest(TestCase):
         view = AppointmentViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], 'Appointment 0')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 0')
 
     def test_list_appointments_filter_by_start_date_gte_and_lte(self):
         mfactories.Appointment(
@@ -556,7 +558,7 @@ class AppointmentListViewsTest(TestCase):
         view = AppointmentViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data['results']), 2)
 
         request = self.factory.get(
             '?start_date_gte=2017-1-1&start_date_lte=2018-1-27')
@@ -565,8 +567,9 @@ class AppointmentListViewsTest(TestCase):
         view = AppointmentViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1, response.data)
-        self.assertEqual(response.data[0]['name'], 'Appointment 0')
+        self.assertEqual(len(response.data['results']), 1,
+                         response.data['results'])
+        self.assertEqual(response.data['results'][0]['name'], 'Appointment 0')
 
     def test_list_appointments_denormalized(self):
         contact = contact_mfactories.Contact()
@@ -584,7 +587,7 @@ class AppointmentListViewsTest(TestCase):
         view = AppointmentViewSet.as_view({'get': 'list'})
         response = view(request)
 
-        appointment_data = response.data[0]
+        appointment_data = response.data['results'][0]
 
         self.assertTrue('id' in appointment_data)
         self.assertEqual(appointment_data['name'], 'John Tester')
