@@ -35,9 +35,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         organization_uuid = request.session.get('jwt_organization_uuid')
         queryset = queryset.filter(organization_uuid=organization_uuid)
 
-        paginate = str_to_bool(request.GET.get('paginate'))
-        if paginate:
-            queryset = self.paginate_queryset(queryset)
+        queryset = self.paginate_queryset(queryset)
 
         denormalize = str_to_bool(request.GET.get('denormalize'))
         if denormalize:
@@ -46,10 +44,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         else:
             serializer = self.get_serializer(queryset, many=True)
 
-        if paginate:
-            return self.get_paginated_response(serializer.data)
-        else:
-            return Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
     def perform_create(self, serializer):
         user_uuid = self.request.session.get('jwt_user_uuid')
