@@ -11,6 +11,9 @@ from .serializers import AppointmentSerializer, \
     AppointmentDenormalizedSerializer, AppointmentNotificationSerializer
 from .utils import str_to_bool
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 
 class DefaultCursorPagination(CursorPagination):
     """
@@ -29,6 +32,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     list:
     Lists all the appointments which belong to the same user's organization.
     """
+    start_date_lte = openapi.Parameter('start_date_lte', openapi.IN_QUERY,
+                                       type=openapi.TYPE_STRING)
+    start_date_gte = openapi.Parameter('start_date_gte', openapi.IN_QUERY,
+                                       type=openapi.TYPE_STRING)
+
+    @swagger_auto_schema(manual_parameters=[start_date_lte, start_date_gte])
     def list(self, request):
         # Use this or the ordering filter won't work
         queryset = self.filter_queryset(self.get_queryset())
