@@ -64,3 +64,4 @@ services:
         -----END PUBLIC KEY-----
       JWT_ISSUER: "crmservice"
       SEARCH_SERVICE_URL: "http://searchservice.local:8001"
+      SECRET_KEY: "abcdb=mtcc7q1cym@oox(lyrz1ncz-(w+(#&u7l-&)7a8wvxyz"
