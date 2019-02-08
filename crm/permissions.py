@@ -11,6 +11,6 @@ class AllowOptionsAuthentication(IsAuthenticated):
 
         if getattr(request, 'session', None) and \
                 request.session.get('jwt_username') and\
-                request.session.get('jwt_user_uuid'):
+                request.session.get('jwt_core_user_uuid'):
             return True
         return False

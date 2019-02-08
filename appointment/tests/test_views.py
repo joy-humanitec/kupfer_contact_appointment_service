@@ -21,12 +21,12 @@ class AppointmentListViewsTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = contact_mfactories.User()
-        self.user_uuid = uuid.uuid4()
+        self.core_user_uuid = uuid.uuid4()
         self.organization_uuid = str(uuid.uuid4())
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': self.user_uuid
+            'jwt_core_user_uuid': self.core_user_uuid
         }
 
     def test_list_empty(self):
@@ -161,7 +161,7 @@ class AppointmentListViewsTest(TestCase):
         mfactories.Appointment(
             name='Appointment 2',
             contact_uuid=contact_uuid,
-            owner=self.session['jwt_user_uuid'],
+            owner=self.session['jwt_core_user_uuid'],
             organization_uuid=self.organization_uuid
         )
 
@@ -181,7 +181,7 @@ class AppointmentListViewsTest(TestCase):
         mfactories.Appointment(
             name='Appointment 0',
             contact_uuid=contact_uuid,
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid
         )
         mfactories.Appointment(
@@ -218,7 +218,7 @@ class AppointmentListViewsTest(TestCase):
         mfactories.Appointment(
             name='Appointment 0',
             contact_uuid=str(uuid.uuid4()),
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
             workflowlevel2_uuids=[wflvl2_uuid]
         )
@@ -239,7 +239,7 @@ class AppointmentListViewsTest(TestCase):
         mfactories.Appointment(
             name='Appointment 0',
             contact_uuid=str(uuid.uuid4()),
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
             workflowlevel2_uuids=[wflvl2_uuid]
         )
@@ -259,7 +259,7 @@ class AppointmentListViewsTest(TestCase):
         mfactories.Appointment(
             name='Appointment 0',
             contact_uuid=str(uuid.uuid4()),
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
             workflowlevel2_uuids=[wflvl2_uuid]
         )
@@ -440,9 +440,9 @@ class AppointmentListViewsTest(TestCase):
         mfactories.Appointment(
             name='Appointment 1',
             contact_uuid=contact_uuid,
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
-            invitee_uuids=[self.user_uuid],
+            invitee_uuids=[self.core_user_uuid],
         )
 
         request = self.factory.get('?invitee=me')
@@ -487,14 +487,14 @@ class AppointmentListViewsTest(TestCase):
     def test_list_appointments_filter_by_start_date_gte(self):
         mfactories.Appointment(
             name='Appointment 0',
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
             start_date=datetime(2017, 1, 1, 12, 30, tzinfo=pytz.UTC),
             end_date=datetime(2017, 1, 1, 14, 30, tzinfo=pytz.UTC),
         )
         mfactories.Appointment(
             name='Appointment 1',
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
             start_date=datetime(2018, 1, 28, 12, 30, tzinfo=pytz.UTC),
             end_date=datetime(2018, 1, 28, 14, 30, tzinfo=pytz.UTC),
@@ -513,14 +513,14 @@ class AppointmentListViewsTest(TestCase):
     def test_list_appointments_filter_by_start_date_lte(self):
         mfactories.Appointment(
             name='Appointment 0',
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
             start_date=datetime(2017, 1, 1, 12, 30, tzinfo=pytz.UTC),
             end_date=datetime(2017, 1, 1, 14, 30, tzinfo=pytz.UTC),
         )
         mfactories.Appointment(
             name='Appointment 1',
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
             start_date=datetime(2018, 1, 28, 12, 30, tzinfo=pytz.UTC),
             end_date=datetime(2018, 1, 28, 14, 30, tzinfo=pytz.UTC),
@@ -538,14 +538,14 @@ class AppointmentListViewsTest(TestCase):
     def test_list_appointments_filter_by_start_date_gte_and_lte(self):
         mfactories.Appointment(
             name='Appointment 0',
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
             start_date=datetime(2017, 1, 1, 12, 30, tzinfo=pytz.UTC),
             end_date=datetime(2017, 1, 1, 14, 30, tzinfo=pytz.UTC),
         )
         mfactories.Appointment(
             name='Appointment 1',
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid,
             start_date=datetime(2018, 1, 28, 12, 30, tzinfo=pytz.UTC),
             end_date=datetime(2018, 1, 28, 14, 30, tzinfo=pytz.UTC),
@@ -606,12 +606,12 @@ class AppointmentRetrieveViewsTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = contact_mfactories.User()
-        self.user_uuid = uuid.uuid4()
+        self.core_user_uuid = uuid.uuid4()
         self.organization_uuid = str(uuid.uuid4())
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': self.user_uuid
+            'jwt_core_user_uuid': self.core_user_uuid
         }
 
     def test_retrieve_appointment_owner(self):
@@ -620,7 +620,7 @@ class AppointmentRetrieveViewsTest(TestCase):
         wflvl2_uuid = uuid.uuid4()
         appointment = mfactories.Appointment(
             name='John Tester',
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             siteprofile_uuid=siteprofile_uuid,
             contact_uuid=contact_uuid,
             organization_uuid=self.organization_uuid,
@@ -658,9 +658,9 @@ class AppointmentRetrieveViewsTest(TestCase):
         self.assertDictContainsSubset(appointment_data, data)
 
     def test_retrieve_appointment_not_owner_same_org(self):
-        other_user_uuid = uuid.uuid4()
+        other_core_user_uuid = uuid.uuid4()
         appointment = mfactories.Appointment(
-            owner=other_user_uuid,
+            owner=other_core_user_uuid,
             organization_uuid=self.organization_uuid
         )
 
@@ -673,9 +673,9 @@ class AppointmentRetrieveViewsTest(TestCase):
 
     def test_retrieve_appointment_not_owner_diff_org(self):
         other_org_uuid = uuid.uuid4()
-        other_user_uuid = uuid.uuid4()
+        other_core_user_uuid = uuid.uuid4()
         appointment = mfactories.Appointment(
-            owner=other_user_uuid,
+            owner=other_core_user_uuid,
             organization_uuid=other_org_uuid
         )
 
@@ -687,8 +687,8 @@ class AppointmentRetrieveViewsTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_retrieve_appointment_not_owner_diff_org_empty(self):
-        other_user_uuid = uuid.uuid4()
-        appointment = mfactories.Appointment(owner=other_user_uuid)
+        other_core_user_uuid = uuid.uuid4()
+        appointment = mfactories.Appointment(owner=other_core_user_uuid)
 
         request = self.factory.get('')
         request.user = self.user
@@ -706,13 +706,13 @@ class AppointmentRetrieveViewsTest(TestCase):
 
     def test_retrieve_appointment_denormalized(self):
         contact = contact_mfactories.Contact()
-        invitee_user_uuid = uuid.uuid4()
+        invitee_core_user_uuid = uuid.uuid4()
 
         appointment = mfactories.Appointment(
             name='John Tester',
             contact_uuid=contact.uuid,
-            owner=self.user_uuid,
-            invitee_uuids=[invitee_user_uuid],
+            owner=self.core_user_uuid,
+            invitee_uuids=[invitee_core_user_uuid],
             organization_uuid=self.organization_uuid
         )
 
@@ -760,12 +760,12 @@ class AppointmentCreateViewsTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = contact_mfactories.User()
-        self.user_uuid = uuid.uuid4()
+        self.core_user_uuid = uuid.uuid4()
         self.organization_uuid = str(uuid.uuid4())
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': self.user_uuid
+            'jwt_core_user_uuid': self.core_user_uuid
         }
 
     def test_create_appointment_minimal(self):
@@ -785,7 +785,7 @@ class AppointmentCreateViewsTest(TestCase):
         self.assertEqual(response.status_code, 201)
 
         appointment = Appointment.objects.get(id=response.data['id'])
-        self.assertEqual(appointment.owner, self.user_uuid)
+        self.assertEqual(appointment.owner, self.core_user_uuid)
         self.assertEqual(appointment.name, data['name'])
         self.assertEqual(appointment.start_date, data['start_date'])
         self.assertEqual(appointment.end_date, data['end_date'])
@@ -966,17 +966,17 @@ class AppointmentUpdateViewsTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = contact_mfactories.User()
-        self.user_uuid = uuid.uuid4()
+        self.core_user_uuid = uuid.uuid4()
         self.organization_uuid = str(uuid.uuid4())
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': self.user_uuid
+            'jwt_core_user_uuid': self.core_user_uuid
         }
 
     def test_update_appointment(self):
         appointment = mfactories.Appointment(
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid
         )
 
@@ -1005,7 +1005,7 @@ class AppointmentUpdateViewsTest(TestCase):
 
     def test_update_appointment_json(self):
         appointment = mfactories.Appointment(
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid
         )
 
@@ -1038,7 +1038,7 @@ class AppointmentUpdateViewsTest(TestCase):
 
         other_org_uuid = uuid.uuid4()
         appointment = mfactories.Appointment(
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=other_org_uuid
         )
 
@@ -1056,9 +1056,9 @@ class AppointmentUpdateViewsTest(TestCase):
 
     def test_update_appointment_diff_org(self):
         other_org_uuid = uuid.uuid4()
-        other_user_uuid = uuid.uuid4()
+        other_core_user_uuid = uuid.uuid4()
         appointment = mfactories.Appointment(
-            owner=other_user_uuid,
+            owner=other_core_user_uuid,
             organization_uuid=other_org_uuid,
             workflowlevel2_uuids=[uuid.uuid4()]
         )
@@ -1075,7 +1075,7 @@ class AppointmentUpdateViewsTest(TestCase):
 
     def test_update_appointment_fails_blank_field(self):
         appointment = mfactories.Appointment(
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid
         )
 
@@ -1092,7 +1092,7 @@ class AppointmentUpdateViewsTest(TestCase):
 
     def test_update_appointment_fails_invalid_date_schema(self):
         appointment = mfactories.Appointment(
-            owner=self.user_uuid,
+            owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid
         )
 
@@ -1118,12 +1118,12 @@ class AppointmentNotificationCreateViewsTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = contact_mfactories.User()
-        self.user_uuid = uuid.uuid4()
+        self.core_user_uuid = uuid.uuid4()
         self.organization_uuid = str(uuid.uuid4())
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': self.user_uuid
+            'jwt_core_user_uuid': self.core_user_uuid
         }
 
     def test_create_appointment_notification_minimal(self):
@@ -1218,17 +1218,17 @@ class AppointmentNotificationRetrieveViewsTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = contact_mfactories.User()
-        self.user_uuid = str(uuid.uuid4())
+        self.core_user_uuid = str(uuid.uuid4())
         self.organization_uuid = str(uuid.uuid4())
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': self.user_uuid
+            'jwt_core_user_uuid': self.core_user_uuid
         }
 
     def test_retrieve_appointment_notification_owner(self):
         appointment = mfactories.Appointment(
-            owner=self.user_uuid
+            owner=self.core_user_uuid
         )
         appointment_notification = mfactories.AppointmentNotification(
             appointment=appointment
@@ -1272,12 +1272,12 @@ class AppointmentNotificationUpdateViewsTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.user = contact_mfactories.User()
-        self.user_uuid = uuid.uuid4()
+        self.core_user_uuid = uuid.uuid4()
         self.organization_uuid = str(uuid.uuid4())
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': self.user_uuid
+            'jwt_core_user_uuid': self.core_user_uuid
         }
 
     def test_update_appointment_notification(self):

@@ -8,7 +8,7 @@ class ContactSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Contact
-        exclude = ('user_uuid',)
+        exclude = ('core_user_uuid',)
 
 
 class ContactNameSerializer(serializers.ModelSerializer):

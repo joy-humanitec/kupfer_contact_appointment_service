@@ -20,7 +20,7 @@ class ContactListViewsTest(TestCase):
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': uuid.uuid4()
+            'jwt_core_user_uuid': uuid.uuid4()
         }
 
     def test_list_empty(self):
@@ -198,11 +198,12 @@ class ContactRetrieveViewsTest(TestCase):
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': uuid.uuid4()
+            'jwt_core_user_uuid': uuid.uuid4()
         }
 
     def test_retrieve_contact(self):
-        contact = mfactories.Contact(user_uuid=self.session['jwt_user_uuid'],
+        contact = mfactories.Contact(core_user_uuid=self.session[
+            'jwt_core_user_uuid'],
                                      organization_uuid=self.organization_uuid)
         request = self.factory.get('')
         request.user = self.user
@@ -214,7 +215,7 @@ class ContactRetrieveViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_retrieve_contact_superuser(self):
-        contact = mfactories.Contact(user_uuid=uuid.uuid4())
+        contact = mfactories.Contact(core_user_uuid=uuid.uuid4())
         request = self.factory.get('')
         su = mfactories.User()
         su.is_superuser = True
@@ -229,7 +230,7 @@ class ContactRetrieveViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_retrieve_contact_diff_org(self):
-        contact = mfactories.Contact(user_uuid=uuid.uuid4())
+        contact = mfactories.Contact(core_user_uuid=uuid.uuid4())
         request = self.factory.get('')
         request.user = self.user
         request.session = self.session
@@ -239,7 +240,7 @@ class ContactRetrieveViewsTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_retrieve_contact_not_owner(self):
-        contact = mfactories.Contact(user_uuid=uuid.uuid4())
+        contact = mfactories.Contact(core_user_uuid=uuid.uuid4())
 
         request = self.factory.get('')
         request.user = self.user
@@ -265,7 +266,7 @@ class ContactCreateViewsTest(TestCase):
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': uuid.uuid4()
+            'jwt_core_user_uuid': uuid.uuid4()
         }
 
     def test_create_contact_minimal(self):
@@ -285,7 +286,8 @@ class ContactCreateViewsTest(TestCase):
         self.assertEqual(response.status_code, 201)
 
         contact = Contact.objects.get(pk=response.data['id'])
-        self.assertEqual(contact.user_uuid, self.session['jwt_user_uuid'])
+        self.assertEqual(contact.core_user_uuid, self.session[
+            'jwt_core_user_uuid'])
         self.assertEqual(contact.first_name, data['first_name'])
         self.assertEqual(contact.last_name, data['last_name'])
         self.assertEqual(contact.organization_uuid, self.organization_uuid)
@@ -294,7 +296,7 @@ class ContactCreateViewsTest(TestCase):
         data = {
             'first_name': 'Máx',
             'last_name': 'Cöoper',
-            'user_uuid': 'Test',
+            'core_user_uuid': 'Test',
             'organization_uuid': 'ignore_this',
             'workflowlevel1_uuids': [self.wflvl1],
         }
@@ -308,7 +310,8 @@ class ContactCreateViewsTest(TestCase):
         self.assertEqual(response.status_code, 201)
 
         contact = Contact.objects.get(pk=response.data['id'])
-        self.assertEqual(contact.user_uuid, self.session['jwt_user_uuid'])
+        self.assertEqual(contact.core_user_uuid, self.session[
+            'jwt_core_user_uuid'])
         self.assertEqual(contact.first_name, data['first_name'])
         self.assertEqual(contact.last_name, data['last_name'])
         self.assertEqual(contact.organization_uuid, self.organization_uuid)
@@ -485,7 +488,7 @@ class ContactUpdateViewsTest(TestCase):
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': uuid.uuid4()
+            'jwt_core_user_uuid': uuid.uuid4()
         }
 
     def test_update_contact_minimal(self):
@@ -594,7 +597,7 @@ class ContactUpdateViewsTest(TestCase):
 
     def test_update_contact_fails_blank_field(self):
         contact = mfactories.Contact(
-            user_uuid=self.session['jwt_user_uuid'],
+            core_user_uuid=self.session['jwt_core_user_uuid'],
             organization_uuid=self.organization_uuid,
             workflowlevel1_uuids=[self.wflvl1])
 
@@ -674,13 +677,13 @@ class ContactDeleteViewsTest(TestCase):
         self.session = {
             'jwt_organization_uuid': self.organization_uuid,
             'jwt_username': 'Test User',
-            'jwt_user_uuid': uuid.uuid4()
+            'jwt_core_user_uuid': uuid.uuid4()
         }
 
     def test_delete_contact(self):
         contact = mfactories.Contact(organization_uuid=self.organization_uuid)
         request = self.factory.delete('')
-        request.user_uuid = self.user
+        request.core_user_uuid = self.user
         request.session = self.session
 
         view = ContactViewSet.as_view({'delete': 'destroy'})
