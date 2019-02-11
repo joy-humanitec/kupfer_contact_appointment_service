@@ -56,14 +56,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         kwargs['partial'] = True
         return super(AppointmentViewSet, self).update(request, *args, **kwargs)
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-
-        serializer = self.get_serializer(instance)
-
-        return Response(serializer.data)
-
     ordering_fields = ('id', 'start_date', 'end_date')
+    lookup_field = 'uuid'
     ordering = ('id',)
     filter_class = AppointmentFilter
     filter_backends = (
