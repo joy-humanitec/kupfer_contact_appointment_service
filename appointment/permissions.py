@@ -12,7 +12,7 @@ class OrganizationPermission(AllowOptionsAuthentication):
             return True
 
         if getattr(request, 'session', None):
-            if request.session.get('jwt_user_uuid') == \
+            if request.session.get('jwt_core_user_uuid') == \
                     str(obj.owner):
                 return True
 

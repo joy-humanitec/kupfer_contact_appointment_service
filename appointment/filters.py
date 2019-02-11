@@ -39,7 +39,7 @@ class AppointmentFilter(django_filters.FilterSet):
 
     def owner_filter(self, queryset, field_name, value):
         if value == CURRENT_USER_FILTER_KEYWORD:
-            my_uuid = self.request.session.get('jwt_user_uuid')
+            my_uuid = self.request.session.get('jwt_core_user_uuid')
 
             return queryset.filter(owner=my_uuid)
         else:
@@ -55,7 +55,7 @@ class AppointmentFilter(django_filters.FilterSet):
     def invitee_filter(self, queryset, field_name, value):
         if value == CURRENT_USER_FILTER_KEYWORD:
             return queryset.filter(invitee_uuids__contains=[
-                self.request.session.get('jwt_user_uuid')])
+                self.request.session.get('jwt_core_user_uuid')])
         else:
             try:
                 UUID(value)

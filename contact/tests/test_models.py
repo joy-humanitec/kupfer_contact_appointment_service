@@ -10,11 +10,11 @@ from ..models import (Contact, ADDRESS_TYPE_CHOICES, PHONE_TYPE_CHOICES,
 
 class ContactTest(TestCase):
     def setUp(self):
-        self.user_uuid = uuid.uuid4()
+        self.core_user_uuid = uuid.uuid4()
 
     def test_contact_save_minimal(self):
         contact = Contact(
-            user_uuid=self.user_uuid,
+            core_user_uuid=self.core_user_uuid,
             first_name='John',
             last_name='Misty',
             workflowlevel1_uuids=[str(uuid.uuid4)],
@@ -26,7 +26,7 @@ class ContactTest(TestCase):
         self.assertEqual(contact_saved.first_name, contact.first_name)
         self.assertEqual(contact_saved.last_name, contact.last_name)
 
-    def test_contact_save_fails_missing_user_uuid(self):
+    def test_contact_save_fails_missing_core_user_uuid(self):
         contact = Contact(
             first_name='John',
             last_name='Misty',
@@ -35,13 +35,13 @@ class ContactTest(TestCase):
 
     def test_contact_save_fails_missing_name(self):
         contact = Contact(
-            user_uuid=self.user_uuid,
+            core_user_uuid=self.core_user_uuid,
             last_name='Misty',
         )
         self.assertRaises(ValidationError, contact.full_clean)
 
         contact = Contact(
-            user_uuid=self.user_uuid,
+            core_user_uuid=self.core_user_uuid,
             first_name='John',
         )
         self.assertRaises(ValidationError, contact.full_clean)
@@ -214,7 +214,7 @@ class ContactTest(TestCase):
 
     def test_string_representation(self):
         contact = Contact(
-            user_uuid=self.user_uuid,
+            core_user_uuid=self.core_user_uuid,
             first_name='Jóhn',
             last_name='Mïsty',
         )

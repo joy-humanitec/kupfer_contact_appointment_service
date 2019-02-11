@@ -51,7 +51,7 @@ EMAIL_TYPE_CHOICES = (
 
 class Contact(SearchServiceIntegrationMixin, models.Model):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
-    user_uuid = models.UUIDField(blank=True, null=True)
+    core_user_uuid = models.UUIDField(blank=True, null=True)
     first_name = models.CharField(max_length=50, help_text='First name')
     middle_name = models.CharField(
         max_length=50, blank=True, null=True,

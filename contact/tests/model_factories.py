@@ -22,7 +22,7 @@ class Contact(DjangoModelFactory):
     class Meta:
         model = ContactM
 
-    user_uuid = uuid.uuid4()
+    core_user_uuid = uuid.uuid4()
     first_name = Iterator(['David', 'Nina'])
     last_name = Iterator(['Bowie', 'Simone'])
     title = Iterator(['mr', 'ms'])

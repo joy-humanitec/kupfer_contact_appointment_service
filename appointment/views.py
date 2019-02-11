@@ -56,9 +56,10 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         return self.get_paginated_response(serializer.data)
 
     def perform_create(self, serializer):
-        user_uuid = self.request.session.get('jwt_user_uuid')
+        core_user_uuid = self.request.session.get('jwt_core_user_uuid')
         organization_uuid = self.request.session.get('jwt_organization_uuid')
-        serializer.save(owner=user_uuid, organization_uuid=organization_uuid)
+        serializer.save(owner=core_user_uuid,
+                        organization_uuid=organization_uuid)
 
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True
