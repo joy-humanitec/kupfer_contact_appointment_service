@@ -327,7 +327,7 @@ class AppointmentListViewsTest(TestCase):
         self.assertIsNone(response.data['next'])
         self.assertIsNone(response.data['previous'])
 
-    def test_paginate_and_denormalize(self):
+    def test_paginate(self):
         contact = contact_mfactories.Contact(
             first_name='Kamasi', last_name='Washington')
         for i in range(0, 2):
@@ -340,7 +340,7 @@ class AppointmentListViewsTest(TestCase):
             )
 
         request = self.factory.get(
-            '?paginate=true&page_size=1&denormalize=true')
+            '?paginate=true&page_size=1')
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'list'})
@@ -571,36 +571,6 @@ class AppointmentListViewsTest(TestCase):
                          response.data['results'])
         self.assertEqual(response.data['results'][0]['name'], 'Appointment 0')
 
-    def test_list_appointments_denormalized(self):
-        contact = contact_mfactories.Contact()
-        wflvl2_uuid = uuid.uuid4()
-        mfactories.Appointment(
-            name='John Tester',
-            contact_uuid=contact.uuid,
-            organization_uuid=self.organization_uuid,
-            workflowlevel2_uuids=[wflvl2_uuid]
-        )
-
-        request = self.factory.get('?denormalize=true')
-        request.user = self.user
-        request.session = self.session
-        view = AppointmentViewSet.as_view({'get': 'list'})
-        response = view(request)
-
-        appointment_data = response.data['results'][0]
-
-        self.assertTrue('id' in appointment_data)
-        self.assertEqual(appointment_data['name'], 'John Tester')
-        self.assertEqual(appointment_data['workflowlevel2_uuids'][0],
-                         str(wflvl2_uuid))
-        self.assertEqual(appointment_data['contact_uuid'], str(contact.uuid))
-        self.assertEqual(appointment_data['contact']['first_name'],
-                         contact.first_name)
-        self.assertEqual(appointment_data['contact']['middle_name'],
-                         contact.middle_name)
-        self.assertEqual(appointment_data['contact']['last_name'],
-                         contact.last_name)
-
 
 class AppointmentRetrieveViewsTest(TestCase):
     def setUp(self):
@@ -704,7 +674,7 @@ class AppointmentRetrieveViewsTest(TestCase):
         response = view(request_get)
         self.assertEqual(response.status_code, 403)
 
-    def test_retrieve_appointment_denormalized(self):
+    def test_retrieve_appointment(self):
         contact = contact_mfactories.Contact()
         invitee_core_user_uuid = uuid.uuid4()
 
@@ -716,7 +686,7 @@ class AppointmentRetrieveViewsTest(TestCase):
             organization_uuid=self.organization_uuid
         )
 
-        request = self.factory.get('?denormalize=true')
+        request = self.factory.get('')
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'retrieve'})

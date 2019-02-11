@@ -8,8 +8,7 @@ from .models import Appointment, AppointmentNotification
 from .permissions import OrganizationPermission, \
     AppointmentNotificationPermission
 from .serializers import AppointmentSerializer, \
-    AppointmentDenormalizedSerializer, AppointmentNotificationSerializer
-from .utils import str_to_bool
+    AppointmentNotificationSerializer
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -43,16 +42,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         organization_uuid = request.session.get('jwt_organization_uuid')
         queryset = queryset.filter(organization_uuid=organization_uuid)
-
         queryset = self.paginate_queryset(queryset)
-
-        denormalize = str_to_bool(request.GET.get('denormalize'))
-        if denormalize:
-            serializer = AppointmentDenormalizedSerializer(
-                queryset, context={'request': request}, many=True)
-        else:
-            serializer = self.get_serializer(queryset, many=True)
-
+        serializer = self.get_serializer(queryset, many=True)
         return self.get_paginated_response(serializer.data)
 
     def perform_create(self, serializer):
@@ -68,12 +59,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        denormalize = str_to_bool(request.GET.get('denormalize'))
-        if denormalize:
-            serializer = AppointmentDenormalizedSerializer(instance, context={
-                'request': request})
-        else:
-            serializer = self.get_serializer(instance)
+        serializer = self.get_serializer(instance)
 
         return Response(serializer.data)
 

@@ -25,6 +25,7 @@ class ContactNameField(serializers.ReadOnlyField):
 
 class AppointmentSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
+    contact = ContactNameField()
 
     def validate_type(self, value):
         if not value:
@@ -47,19 +48,16 @@ class AppointmentSerializer(serializers.ModelSerializer):
         exclude = ('owner',)
 
 
-class AppointmentDenormalizedSerializer(serializers.HyperlinkedModelSerializer):  # noqa
-    id = serializers.ReadOnlyField()
-    contact = ContactNameField()
-
-    class Meta:
-        model = Appointment
-        extra_fields = ['invitees']
-        exclude = ('owner',)
+class AppointmentHyperlinkField(serializers.HyperlinkedRelatedField):
+    view_name = 'appointment-detail'
+    queryset = Appointment.objects.all()
+    lookup_field = 'uuid'
 
 
 class AppointmentNotificationSerializer(serializers.HyperlinkedModelSerializer):  # noqa
     id = serializers.ReadOnlyField()
     sent_at = serializers.ReadOnlyField()
+    appointment = AppointmentHyperlinkField()
 
     class Meta:
         model = AppointmentNotification
