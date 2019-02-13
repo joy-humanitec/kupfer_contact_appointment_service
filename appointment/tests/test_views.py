@@ -327,7 +327,7 @@ class AppointmentListViewsTest(TestCase):
         self.assertIsNone(response.data['next'])
         self.assertIsNone(response.data['previous'])
 
-    def test_paginate_and_denormalize(self):
+    def test_paginate(self):
         contact = contact_mfactories.Contact(
             first_name='Kamasi', last_name='Washington')
         for i in range(0, 2):
@@ -340,7 +340,7 @@ class AppointmentListViewsTest(TestCase):
             )
 
         request = self.factory.get(
-            '?paginate=true&page_size=1&denormalize=true')
+            '?paginate=true&page_size=1')
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'list'})
@@ -571,36 +571,6 @@ class AppointmentListViewsTest(TestCase):
                          response.data['results'])
         self.assertEqual(response.data['results'][0]['name'], 'Appointment 0')
 
-    def test_list_appointments_denormalized(self):
-        contact = contact_mfactories.Contact()
-        wflvl2_uuid = uuid.uuid4()
-        mfactories.Appointment(
-            name='John Tester',
-            contact_uuid=contact.uuid,
-            organization_uuid=self.organization_uuid,
-            workflowlevel2_uuids=[wflvl2_uuid]
-        )
-
-        request = self.factory.get('?denormalize=true')
-        request.user = self.user
-        request.session = self.session
-        view = AppointmentViewSet.as_view({'get': 'list'})
-        response = view(request)
-
-        appointment_data = response.data['results'][0]
-
-        self.assertTrue('id' in appointment_data)
-        self.assertEqual(appointment_data['name'], 'John Tester')
-        self.assertEqual(appointment_data['workflowlevel2_uuids'][0],
-                         str(wflvl2_uuid))
-        self.assertEqual(appointment_data['contact_uuid'], str(contact.uuid))
-        self.assertEqual(appointment_data['contact']['first_name'],
-                         contact.first_name)
-        self.assertEqual(appointment_data['contact']['middle_name'],
-                         contact.middle_name)
-        self.assertEqual(appointment_data['contact']['last_name'],
-                         contact.last_name)
-
 
 class AppointmentRetrieveViewsTest(TestCase):
     def setUp(self):
@@ -630,7 +600,7 @@ class AppointmentRetrieveViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'retrieve'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
         self.assertEqual(response.status_code, 200)
 
         appointment_data = appointment.__dict__
@@ -668,7 +638,7 @@ class AppointmentRetrieveViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'retrieve'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
         self.assertEqual(response.status_code, 200)
 
     def test_retrieve_appointment_not_owner_diff_org(self):
@@ -683,7 +653,7 @@ class AppointmentRetrieveViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'retrieve'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
         self.assertEqual(response.status_code, 403)
 
     def test_retrieve_appointment_not_owner_diff_org_empty(self):
@@ -694,7 +664,7 @@ class AppointmentRetrieveViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'retrieve'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
 
         self.assertEqual(response.status_code, 403)
 
@@ -704,7 +674,7 @@ class AppointmentRetrieveViewsTest(TestCase):
         response = view(request_get)
         self.assertEqual(response.status_code, 403)
 
-    def test_retrieve_appointment_denormalized(self):
+    def test_retrieve_appointment(self):
         contact = contact_mfactories.Contact()
         invitee_core_user_uuid = uuid.uuid4()
 
@@ -716,11 +686,11 @@ class AppointmentRetrieveViewsTest(TestCase):
             organization_uuid=self.organization_uuid
         )
 
-        request = self.factory.get('?denormalize=true')
+        request = self.factory.get('')
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'retrieve'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
         self.assertEqual(response.status_code, 200)
 
         appointment_data = appointment.__dict__
@@ -996,7 +966,7 @@ class AppointmentUpdateViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'post': 'update'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
         self.assertEqual(response.status_code, 200)
 
         appointment = Appointment.objects.get(id=response.data['id'])
@@ -1024,7 +994,7 @@ class AppointmentUpdateViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'post': 'update'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
 
         self.assertEqual(response.status_code, 200)
         appointment = Appointment.objects.get(id=response.data['id'])
@@ -1050,7 +1020,7 @@ class AppointmentUpdateViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'post': 'update'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
 
         self.assertEqual(response.status_code, 200)
 
@@ -1070,7 +1040,7 @@ class AppointmentUpdateViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'post': 'update'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
         self.assertEqual(response.status_code, 403)
 
     def test_update_appointment_fails_blank_field(self):
@@ -1087,7 +1057,7 @@ class AppointmentUpdateViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'post': 'update'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
         self.assertEqual(response.status_code, 400)
 
     def test_update_appointment_fails_invalid_date_schema(self):
@@ -1104,7 +1074,7 @@ class AppointmentUpdateViewsTest(TestCase):
         request.session = self.session
 
         view = AppointmentViewSet.as_view({'post': 'update'})
-        response = view(request, pk=appointment.pk)
+        response = view(request, uuid=appointment.uuid)
         self.assertEqual(response.status_code, 400)
 
     def test_update_appointment_anonymoususer_forbidden(self):
@@ -1132,7 +1102,7 @@ class AppointmentNotificationCreateViewsTest(TestCase):
         data = {
             'recipient': 'test@example.com',
             'appointment': reverse('appointment-detail',
-                                   kwargs={'pk': appointment.pk})
+                                   kwargs={'uuid': appointment.uuid})
         }
 
         request = self.factory.post('', data)
@@ -1155,7 +1125,7 @@ class AppointmentNotificationCreateViewsTest(TestCase):
             'message': 'This is a new message',
             'subject': 'New Subject',
             'appointment': reverse('appointment-detail',
-                                   kwargs={'pk': appointment.pk}),
+                                   kwargs={'uuid': appointment.uuid}),
             'org_phone': '+123 456 78',
             'org_name': 'Your org'
         }
@@ -1196,7 +1166,7 @@ class AppointmentNotificationCreateViewsTest(TestCase):
         data = {
             'recipient': 'test@example.com',
             'appointment': reverse('appointment-detail',
-                                   kwargs={'pk': appointment.pk}),
+                                   kwargs={'uuid': appointment.uuid}),
             'send_notification': True
         }
 
@@ -1317,7 +1287,8 @@ class AppointmentNotificationUpdateViewsTest(TestCase):
             'appointment':
                 reverse(
                     'appointment-detail',
-                    kwargs={'pk': appointment_notification.appointment.pk}),
+                    kwargs={'uuid':
+                            appointment_notification.appointment.uuid}),
         }
 
         request = self.factory.post('', data)
