@@ -1,10 +1,11 @@
+import json
 import logging
 
 from rest_framework import serializers
 
 from contact.models import Contact
 from contact.serializers import ContactNameSerializer
-from .models import Appointment, AppointmentNotification
+from .models import Appointment, AppointmentNotification, AppointmentNote
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +24,45 @@ class ContactNameField(serializers.ReadOnlyField):
                 return contact_serizalizer.data
 
 
+class AppointmentNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentNote
+        fields = '__all__'
+
+
 class AppointmentSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     contact = ContactNameField()
+    notes = AppointmentNoteSerializer(many=True)
+
+    def create(self, validated_data):
+        notes = validated_data.pop('notes', [])
+        appointment = super().create(validated_data)
+        notes_list = []
+        for note in notes:
+            ans = AppointmentNoteSerializer(data=note)
+            ans.is_valid(raise_exception=True)
+            notes_list.append(ans.save())
+        appointment.notes.set(notes_list)
+        return appointment
+
+    def update(self, instance, validated_data):
+        notes = validated_data.pop('notes', [])
+        super().update(instance, validated_data)
+        for note in notes:
+            instance_note, _ = instance.notes.get_or_create(type=note['type'])
+            instance_note.note = note['note']
+            instance_note.save()
+        return instance
+
+    def validate_notes(self, value):
+        types_list = []
+        for note in value:
+            if note['type'] in types_list:
+                raise serializers.ValidationError(
+                    'every type is only allowed once')
+            types_list.append(note['type'])
+        return value
 
     def validate_type(self, value):
         if not value:
