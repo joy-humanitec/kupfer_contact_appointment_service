@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.core import mail
 import pytz
 
-from ..models import Appointment, AppointmentNotification
+from ..models import Appointment, AppointmentNotification, AppointmentNote
 from . import model_factories as mfactories
 
 
@@ -49,13 +49,16 @@ class AppointmentTest(TestCase):
             end_date=datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
             address="Teststreet 123",
             invitee_uuids=[uuid.uuid4(), uuid.uuid4()],
-            notes="Test note",
             type=["Test Type"],
             contact_uuid=str(uuid.uuid4())
         )
 
         appointment_db = Appointment.objects.get(pk=appointment.pk)
         self.assertEqual(appointment_db.name, "Test Name 2")
+
+        appointment_note = AppointmentNote.objects.create(note='test note')
+        appointment.notes.set([appointment_note,])
+        self.assertIn(appointment_note, appointment.notes.all())
 
     def test_appointment_save_fails_missing_owner(self):
         appointment = Appointment(

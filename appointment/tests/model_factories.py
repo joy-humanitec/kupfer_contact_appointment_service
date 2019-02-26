@@ -2,10 +2,16 @@ from datetime import datetime
 import pytz
 import uuid
 
-from factory import DjangoModelFactory, Iterator, SubFactory
+from factory import DjangoModelFactory, Iterator, SubFactory, RelatedFactory
 
 from ..models import Appointment as AppointmentM
 from ..models import AppointmentNotification as AppointmentNotificationM
+from ..models import AppointmentNote as ApppointmentNoteM
+
+
+class AppointmentNote(DjangoModelFactory):
+    class Meta:
+        model = ApppointmentNoteM
 
 
 class Appointment(DjangoModelFactory):
@@ -19,7 +25,7 @@ class Appointment(DjangoModelFactory):
     type = ['Testtype1', 'Testtype2']
     address = "Teststreet 1"
     organization_uuid = uuid.uuid4()
-    notes = Iterator(['Lorem', 'Ipsum'])
+    notes = RelatedFactory(AppointmentNote)
 
 
 class AppointmentNotification(DjangoModelFactory):

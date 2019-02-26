@@ -778,11 +778,12 @@ class AppointmentCreateViewsTest(TestCase):
             'siteprofile_uuid': str(siteprofile_uuid),
             'invitee_uuids': invitee_uuids,
             'type': ['Test Type'],
-            'notes': 'Please help me, youre my only hope',
+            'notes': [{"note": "Please help me, youre my only hope",
+                       "type": "primary"}],
             'workflowlevel2_uuids': [wflvl2_uuid],
             'contact_uuid': contact_uuid,
         }
-        request = self.factory.post('', data)
+        request = self.factory.post('', data, format='json')
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'post': 'create'})
@@ -795,7 +796,8 @@ class AppointmentCreateViewsTest(TestCase):
         self.assertEqual(appointment.address, data['address'])
         self.assertEqual(appointment.siteprofile_uuid, siteprofile_uuid)
         self.assertEqual(appointment.invitee_uuids, invitee_uuids)
-        self.assertEqual(appointment.notes, data['notes'])
+        self.assertEqual(appointment.notes.get().note,
+                         data['notes'][0]['note'])
         self.assertEqual(appointment.contact_uuid, data['contact_uuid'])
         self.assertEqual(appointment.workflowlevel2_uuids,
                          data['workflowlevel2_uuids'])
@@ -810,6 +812,44 @@ class AppointmentCreateViewsTest(TestCase):
             data['end_date'], "%Y-%m-%dT%H:%M:%S+01:00")
         end_date_local = local.localize(start_date_naive, is_dst=None)
         self.assertEqual(appointment.end_date, end_date_local)
+
+    def test_create_appointment_with_faulty_notes(self):
+        wflvl2_uuid = uuid.uuid4()
+        start_date = datetime(2018, 1, 1, 12, 15)\
+            .strftime("%Y-%m-%dT%H:%M:%S+01:00")
+        end_date = datetime(2018, 1, 1, 12, 30)\
+            .strftime("%Y-%m-%dT%H:%M:%S+01:00")
+        invitee_uuids = [uuid.uuid4(), uuid.uuid4()]
+        contact_uuid = uuid.uuid4()
+        siteprofile_uuid = uuid.uuid4()
+
+        data = {
+            'name': 'Max Mustermann',
+            'start_date': start_date,
+            'end_date': end_date,
+            'address': 'Teststreet 123',
+            'siteprofile_uuid': str(siteprofile_uuid),
+            'invitee_uuids': invitee_uuids,
+            'type': ['Test Type'],
+            'notes': [{"note": "Please help me, youre my only hope",
+                       "type": "primary"},
+                      {"note": "oh oh this is not valid",
+                       "type": "primary"}],
+            'workflowlevel2_uuids': [wflvl2_uuid],
+            'contact_uuid': contact_uuid,
+        }
+        request = self.factory.post('', data, format='json')
+        request.user = self.user
+        request.session = self.session
+        view = AppointmentViewSet.as_view({'post': 'create'})
+
+        response = view(request)
+        response.render()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            json.loads(response.content),
+            {'notes': ['every type is only allowed once']})
 
     def test_create_appointment_diff_org_than_user(self):
         start_date = datetime(2018, 1, 1, 12, 15)\
@@ -958,18 +998,20 @@ class AppointmentUpdateViewsTest(TestCase):
             'start_date': datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
             'siteprofile_uuid': str(siteprofile_uuid),
             'invitee_uuids': invitee_uuids,
-            'notes': 'Please help me, youre my only hope',
+            'notes': [{"note": "Pleeeaaase",
+                       "type": "primary"}],
             'contact_uuid': contact_uuid,
         }
 
-        request = self.factory.post('', data)
+        request = self.factory.post('', data, format='json')
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'post': 'update'})
         response = view(request, uuid=appointment.uuid)
         self.assertEqual(response.status_code, 200)
-
         appointment = Appointment.objects.get(id=response.data['id'])
+        self.assertEqual(appointment.notes.get().note,
+                         data['notes'][0]['note'])
         self.assertEqual(appointment.invitee_uuids, invitee_uuids)
         self.assertEqual(appointment.siteprofile_uuid, siteprofile_uuid)
 
@@ -984,13 +1026,15 @@ class AppointmentUpdateViewsTest(TestCase):
 
         data = {
             'name': 'Max Mustermann',
-            'notes': 'Please help me, youre my only hope',
+            'notes': [{"note": "PLEEASE",
+                       "type": "primary"}],
             'contact_uuid': str(contact_uuid),
             'workflowlevel2_uuids': [str(wflvl2_uuid)]
         }
 
         request = self.factory.post('', json.dumps(data),
                                     content_type='application/json')
+
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'post': 'update'})
@@ -998,6 +1042,8 @@ class AppointmentUpdateViewsTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         appointment = Appointment.objects.get(id=response.data['id'])
+        self.assertEqual(appointment.notes.get().note,
+                         data['notes'][0]['note'])
         self.assertEqual(appointment.contact_uuid, contact_uuid)
         self.assertEqual(list(appointment.workflowlevel2_uuids), [wflvl2_uuid])
 
