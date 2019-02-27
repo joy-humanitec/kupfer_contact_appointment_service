@@ -57,7 +57,7 @@ class AppointmentTest(TestCase):
         self.assertEqual(appointment_db.name, "Test Name 2")
 
         appointment_note = AppointmentNote.objects.create(note='test note')
-        appointment.notes.set([appointment_note,])
+        appointment.notes.set([appointment_note, ])
         self.assertIn(appointment_note, appointment.notes.all())
 
     def test_appointment_save_fails_missing_owner(self):
