@@ -10,8 +10,14 @@ from search_service_integration.managers import SearchServiceIntegrationManager
 
 
 TITLE_CHOICES = (
+    ('dr', 'Dr.'),
+    ('frau', 'Frau.'),
+    ('herr', 'Herr.'),
     ('mr', 'Mr.'),
     ('ms', 'Ms.'),
+    ('mrs', 'Mrs.'),
+    ('miss', 'Miss.'),
+    ('prof', 'Prof.'),
 )
 
 CONTACT_TYPE_CHOICES = (
@@ -59,7 +65,7 @@ class Contact(SearchServiceIntegrationMixin, models.Model):
     last_name = models.CharField(max_length=50,
                                  help_text='Surname or family name')
     title = models.CharField(
-        max_length=2, choices=TITLE_CHOICES, blank=True, null=True,
+        max_length=16, choices=TITLE_CHOICES, blank=True, null=True,
         help_text='Choices: {}'.format(
             ", ".join([kv[0] for kv in TITLE_CHOICES])))
     contact_type = models.CharField(
