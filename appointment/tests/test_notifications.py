@@ -28,7 +28,7 @@ class AppointmentNotificationEmailTest(TestCase):
             start_date=datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
             end_date=datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
             address="Oderberger Straße 16A", invitee_uuids=[invitee],
-            notes="Test note", type=["Test Type"],
+            type=["Test Type"],
             contact_uuid=str(contact.uuid)
         )
 
@@ -60,7 +60,7 @@ class AppointmentNotificationEmailTest(TestCase):
             start_date=datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
             end_date=datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
             address="Oderberger Straße 16A", invitee_uuids=[invitee],
-            notes="Test note", type=["Test Type"],
+            type=["Test Type"],
             organization_uuid=uuid.uuid4(),
             contact_uuid=str(contact.uuid)
         )
@@ -91,7 +91,7 @@ class AppointmentNotificationEmailTest(TestCase):
             start_date=datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
             end_date=datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
             address="Oderberger Straße 16A", invitee_uuids=[invitee],
-            notes="Test note", type=["Test Type"],
+            type=["Test Type"],
             organization_uuid=uuid.uuid4(),
             contact_uuid=str(contact.uuid)
         )
@@ -127,7 +127,7 @@ class AppointmentNotificationEmailTest(TestCase):
             start_date=start_date,
             end_date=end_date,
             address="Oderberger Straße 16A", invitee_uuids=[invitee],
-            notes="Test note", type=["Test Type"],
+            type=["Test Type"],
             organization_uuid=uuid.uuid4(),
             contact_uuid=str(contact.uuid)
         )

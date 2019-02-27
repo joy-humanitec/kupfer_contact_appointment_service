@@ -14,6 +14,21 @@ from search_service_integration.managers import SearchServiceIntegrationManager
 
 logger = logging.getLogger(__name__)
 
+NOTE_TYPE_PRIMARY, NOTE_TYPE_SECONDARY = 1, 2
+NOTE_TYPES = (
+    (NOTE_TYPE_PRIMARY, 'Primary'),
+    (NOTE_TYPE_SECONDARY, 'Secondary'),
+)
+
+
+class AppointmentNote(models.Model):
+    note = models.TextField()
+    type = models.IntegerField(choices=NOTE_TYPES, default=1,
+        help_text='Choices: {}'.format(", ".join([str(kv[0]) for kv in NOTE_TYPES])))
+
+    def __str__(self):
+        return f'{self.type} - {self.note[:10]}'
+
 
 class Appointment(SearchServiceIntegrationMixin, models.Model):
     uuid = models.UUIDField(db_index=True, default=uuid.uuid4, editable=False)
@@ -27,13 +42,12 @@ class Appointment(SearchServiceIntegrationMixin, models.Model):
         blank=True, null=True, help_text='Address where it takes place')
     invitee_uuids = ArrayField(
         models.UUIDField(), blank=True, null=True,
-        help_text='List of TolaUser UUIDs invited to the appointment.')
+        help_text='List of CoreUser UUIDs invited to the appointment.')
     organization_uuid = models.UUIDField(blank=True, null=True)
     workflowlevel2_uuids = ArrayField(
         models.UUIDField(), blank=True, null=True,
         help_text='List of WorkflowLevel2s added to the appointment.')
-    notes = models.CharField(
-        max_length=500, help_text='Notes', blank=True, null=True)
+    notes = models.ManyToManyField(AppointmentNote)
     contact_uuid = models.UUIDField(blank=True, null=True)
 
     def clean(self):
