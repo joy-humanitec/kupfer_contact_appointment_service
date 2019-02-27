@@ -779,7 +779,7 @@ class AppointmentCreateViewsTest(TestCase):
             'invitee_uuids': invitee_uuids,
             'type': ['Test Type'],
             'notes': [{"note": "Please help me, youre my only hope",
-                       "type": "primary"}],
+                       "type": 1}],
             'workflowlevel2_uuids': [wflvl2_uuid],
             'contact_uuid': contact_uuid,
         }
@@ -832,9 +832,9 @@ class AppointmentCreateViewsTest(TestCase):
             'invitee_uuids': invitee_uuids,
             'type': ['Test Type'],
             'notes': [{"note": "Please help me, youre my only hope",
-                       "type": "primary"},
+                       "type": 1},
                       {"note": "oh oh this is not valid",
-                       "type": "primary"}],
+                       "type": 1}],
             'workflowlevel2_uuids': [wflvl2_uuid],
             'contact_uuid': contact_uuid,
         }
@@ -999,7 +999,7 @@ class AppointmentUpdateViewsTest(TestCase):
             'siteprofile_uuid': str(siteprofile_uuid),
             'invitee_uuids': invitee_uuids,
             'notes': [{"note": "Pleeeaaase",
-                       "type": "primary"}],
+                       "type": 1}],
             'contact_uuid': contact_uuid,
         }
 
@@ -1027,7 +1027,7 @@ class AppointmentUpdateViewsTest(TestCase):
         data = {
             'name': 'Max Mustermann',
             'notes': [{"note": "PLEEASE",
-                       "type": "primary"}],
+                       "type": 1}],
             'contact_uuid': str(contact_uuid),
             'workflowlevel2_uuids': [str(wflvl2_uuid)]
         }
