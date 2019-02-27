@@ -23,7 +23,7 @@ NOTE_TYPES = (
 
 class AppointmentNote(models.Model):
     note = models.TextField()
-    type = models.IntegerField(choices=NOTE_TYPES, default=1, help_text='Choices: {}'.format(", ".join([str(kv[0]) for kv in NOTE_TYPES])))
+    type = models.PositiveSmallIntegerField(choices=NOTE_TYPES, default=1, help_text='Choices: {}'.format(", ".join([str(kv[0]) for kv in NOTE_TYPES])))
 
     def __str__(self):
         return f'{self.type} - {self.note[:10]}'
