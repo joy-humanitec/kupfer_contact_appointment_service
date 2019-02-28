@@ -1015,6 +1015,32 @@ class AppointmentUpdateViewsTest(TestCase):
         self.assertEqual(appointment.invitee_uuids, invitee_uuids)
         self.assertEqual(appointment.siteprofile_uuid, siteprofile_uuid)
 
+    def test_update_appointment_without_notes(self):
+        appointment = mfactories.Appointment(
+            owner=self.core_user_uuid,
+            organization_uuid=self.organization_uuid
+        )
+
+        invitee_uuids = [uuid.uuid4(), uuid.uuid4()]
+        contact_uuid = str(uuid.uuid4())
+        siteprofile_uuid = uuid.uuid4()
+        data = {
+            'name': 'Max Mustermann',
+            'start_date': datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
+            'siteprofile_uuid': str(siteprofile_uuid),
+            'invitee_uuids': invitee_uuids,
+            'contact_uuid': contact_uuid,
+        }
+        request = self.factory.patch('', data, format='json')
+        request.user = self.user
+        request.session = self.session
+        view = AppointmentViewSet.as_view({'patch': 'update'})
+        response = view(request, uuid=appointment.uuid)
+        self.assertEqual(response.status_code, 200)
+        appointment = Appointment.objects.get(id=response.data['id'])
+        self.assertEqual(appointment.invitee_uuids, invitee_uuids)
+        self.assertEqual(appointment.siteprofile_uuid, siteprofile_uuid)
+
     def test_update_appointment_json(self):
         appointment = mfactories.Appointment(
             owner=self.core_user_uuid,
