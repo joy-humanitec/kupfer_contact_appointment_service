@@ -32,7 +32,7 @@ class AppointmentNoteSerializer(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     contact = ContactNameField()
-    notes = AppointmentNoteSerializer(many=True)
+    notes = AppointmentNoteSerializer(many=True, required=False)
 
     def create(self, validated_data):
         notes = validated_data.pop('notes', [])

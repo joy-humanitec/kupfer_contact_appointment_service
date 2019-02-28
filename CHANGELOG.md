@@ -1,5 +1,11 @@
 # crm_service CHANGELOG
 
+## [v0.0.18] - 2019-02-28
+
+### Changed
+
+- Updated `/appointment` endpoint: `notes` shouldn't be required
+
 ## [v0.0.17] - 2019-02-28
 
 ### Added
