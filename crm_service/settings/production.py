@@ -24,16 +24,13 @@ try:
 except KeyError:
     ALLOWED_HOSTS = []
 
-# https://docs.djangoproject.com/en/2.0/ref/settings/#secure-proxy-ssl-header
-
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 
 # NGINX and HTTPS
 # https://docs.djangoproject.com/en/2.0/ref/settings/#std:setting-USE_X_FORWARDED_HOST
 
 USE_X_FORWARDED_HOST = True if os.getenv('USE_X_FORWARDED_HOST') == 'True' \
     else False
+
 
 # https://docs.djangoproject.com/en/2.0/ref/settings/#secure-proxy-ssl-header
 
