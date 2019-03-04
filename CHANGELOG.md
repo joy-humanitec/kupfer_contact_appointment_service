@@ -1,5 +1,18 @@
 # crm_service CHANGELOG
 
+## [v0.0.19] - 2019-03-04
+
+### Added
+
+- Added a new field to `/contact`-endpoint: `Contact.title_display`
+- Added `LICENCE`
+
+### Changed
+
+- Updated `/contact` endpoint: `title` with more choices `dr prof, prof dr` 
+- Updated `/appointment` endpoint: with more notes-choices for OOO-Notes
+- Refactored settings
+
 ## [v0.0.18] - 2019-02-28
 
 ### Changed
