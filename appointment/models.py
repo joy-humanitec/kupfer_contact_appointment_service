@@ -14,10 +14,14 @@ from search_service_integration.managers import SearchServiceIntegrationManager
 
 logger = logging.getLogger(__name__)
 
-NOTE_TYPE_PRIMARY, NOTE_TYPE_SECONDARY = 1, 2
+NOTE_TYPE_PRIMARY, NOTE_TYPE_SECONDARY, NOTE_TYPE_TERTIARY,\
+    NOTE_TYPE_QUATERNARY = 1, 2, 3, 4
+
 NOTE_TYPES = (
     (NOTE_TYPE_PRIMARY, 'Primary'),
     (NOTE_TYPE_SECONDARY, 'Secondary'),
+    (NOTE_TYPE_TERTIARY, 'OOO Reason'),
+    (NOTE_TYPE_QUATERNARY, 'OOO Note'),
 )
 
 
