@@ -34,6 +34,7 @@ class ContactSerializerTest(TestCase):
             'siteprofile_uuids',
             'workflowlevel2_uuids',
             'title',
+            'title_display',
             'url',
             'phones',
             'company',
@@ -44,8 +45,15 @@ class ContactSerializerTest(TestCase):
             'workflowlevel1_uuids',
             'emails'
         ]
-
         self.assertEqual(set(data.keys()), set(keys))
+
+    def test_title_display_field(self):
+        contact = mfactories.Contact(title='dr prof')
+        request = self.factory.get('/')
+        serializer_context = {'request': Request(request)}
+        serializer = ContactSerializer(instance=contact,
+                                       context=serializer_context)
+        self.assertEqual(serializer['title_display'].value, "Dr. Prof.")
 
 
 class ContactNameSerializerTest(TestCase):

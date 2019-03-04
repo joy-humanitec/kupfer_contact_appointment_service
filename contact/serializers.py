@@ -5,6 +5,8 @@ from .models import Contact
 class ContactSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField()
     organization_uuid = serializers.ReadOnlyField()
+    title_display = serializers.CharField(source='get_title_display',
+                                          read_only=True)
 
     class Meta:
         model = Contact
