@@ -67,7 +67,7 @@ if [ "$keepdb" = false ] ; then
 fi
 
 if [ "$ci" = true ] ; then
-    cat .flake8
+    cat setup.cfg
 fi
 
 if [ "$bash_on_finish" = true ] ; then
