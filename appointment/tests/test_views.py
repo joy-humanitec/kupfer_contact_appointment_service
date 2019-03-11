@@ -13,7 +13,7 @@ from django.core import mail
 
 from . import model_factories as mfactories
 from contact.tests import model_factories as contact_mfactories
-from ..models import Appointment, AppointmentNotification
+from ..models import Appointment, AppointmentNotification, AppointmentNote
 from ..views import AppointmentViewSet, AppointmentNotificationViewSet
 
 
@@ -1014,6 +1014,44 @@ class AppointmentUpdateViewsTest(TestCase):
                          data['notes'][0]['note'])
         self.assertEqual(appointment.invitee_uuids, invitee_uuids)
         self.assertEqual(appointment.siteprofile_uuid, siteprofile_uuid)
+
+    def test_create_appointment_and_remove_notes(self):
+        wflvl2_uuid = uuid.uuid4()
+        start_date = datetime(2018, 1, 1, 12, 15)\
+            .strftime("%Y-%m-%dT%H:%M:%S+01:00")
+        end_date = datetime(2018, 1, 1, 12, 30)\
+            .strftime("%Y-%m-%dT%H:%M:%S+01:00")
+        data = {
+            'name': 'Max Mustermann',
+            'start_date': start_date,
+            'end_date': end_date,
+            'address': 'Teststreet 123',
+            'type': ['Test Type'],
+            'notes': [{"note": "Please help me, youre my only hope",
+                       "type": 1}],
+            'workflowlevel2_uuids': [wflvl2_uuid],
+        }
+        request = self.factory.post('', data, format='json')
+        request.user = self.user
+        request.session = self.session
+        view = AppointmentViewSet.as_view({'post': 'create'})
+        response = view(request)
+        self.assertEqual(response.status_code, 201)
+        appointment = Appointment.objects.get(id=response.data['id'])
+        self.assertEqual(appointment.notes.get().note,
+                         data['notes'][0]['note'])
+        self.assertEqual(AppointmentNote.objects.count(), 1)
+        # remove notes
+        data.update({'notes': []})
+        request = self.factory.patch(appointment.uuid, data, format='json')
+        request.user = self.user
+        request.session = self.session
+        view = AppointmentViewSet.as_view({'patch': 'update'})
+        response = view(request, uuid=appointment.uuid).render()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content)['notes'], [])
+        self.assertEqual(list(appointment.notes.all()), [])
+        self.assertEqual(AppointmentNote.objects.count(), 0)
 
     def test_update_appointment_without_notes(self):
         appointment = mfactories.Appointment(

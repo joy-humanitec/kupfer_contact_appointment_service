@@ -46,12 +46,13 @@ class AppointmentSerializer(serializers.ModelSerializer):
         return appointment
 
     def update(self, instance, validated_data):
-        notes = validated_data.pop('notes', [])
+        notes = validated_data.pop('notes', None)
         super().update(instance, validated_data)
-        for note in notes:
-            instance_note, _ = instance.notes.get_or_create(type=note['type'])
-            instance_note.note = note['note']
-            instance_note.save()
+        if isinstance(notes, list):
+            instance.notes.all().delete()  # first empty notes and delete related AppointmentNotes
+            for note in notes:
+                instance_note = instance.notes.create(type=note['type'], note=note['note'])
+                instance_note.save()
         return instance
 
     def validate_notes(self, value):
