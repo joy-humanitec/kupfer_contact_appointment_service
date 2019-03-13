@@ -275,6 +275,7 @@ class ContactCreateViewsTest(TestCase):
             'last_name': 'Cöoper',
             'organization_uuid': 'ignore_this',
             'workflowlevel1_uuids': [self.wflvl1],
+            'title_display': 'Dr.',
         }
 
         request = self.factory.post(  # trick to pass a list in a payload
@@ -499,6 +500,7 @@ class ContactUpdateViewsTest(TestCase):
             'first_name': 'David',
             'middle_name': 'Keith',
             'last_name': 'Lynch',
+            'title_display': 'Dr.',
         }
         request = self.factory.post('', data)
         request.user = self.user

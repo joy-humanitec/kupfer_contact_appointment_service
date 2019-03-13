@@ -10,6 +10,11 @@ from search_service_integration.managers import SearchServiceIntegrationManager
 
 
 TITLE_CHOICES = (
+    ('prof dr', 'Prof. Dr.'),
+    ('dr prof', 'Dr. Prof.'),
+    ('prof', 'Prof.'),
+    ('frau dr', 'Frau Dr.'),
+    ('herr dr', 'Herr Dr.'),
     ('dr', 'Dr.'),
     ('frau', 'Frau'),
     ('herr', 'Herr'),
@@ -17,9 +22,6 @@ TITLE_CHOICES = (
     ('ms', 'Ms.'),
     ('mrs', 'Mrs.'),
     ('miss', 'Miss'),
-    ('prof', 'Prof.'),
-    ('prof dr', 'Prof. Dr.'),
-    ('dr prof', 'Dr. Prof.'),
 )
 
 CONTACT_TYPE_CHOICES = (
