@@ -57,6 +57,7 @@ INSTALLED_APPS_LOCAL = [
     'crm',
     'contact',
     'appointment',
+    'import_csv',
 ]
 
 INSTALLED_APPS = INSTALLED_APPS_DJANGO + INSTALLED_APPS_THIRD_PARTIES + \
