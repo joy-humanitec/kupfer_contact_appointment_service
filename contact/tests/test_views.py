@@ -30,7 +30,7 @@ class ContactListViewsTest(TestCase):
         view = ContactViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, [])
+        self.assertEqual(response.data['results'], [])
 
     def test_list_contacts(self):
         siteprofile_uuids = [str(uuid.uuid4()), str(uuid.uuid4())]
@@ -63,8 +63,8 @@ class ContactListViewsTest(TestCase):
         view = ContactViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        contact = response.data[0]
+        self.assertEqual(len(response.data['results']), 1)
+        contact = response.data['results'][0]
         self.assertTrue('id' in contact)
         self.assertEqual(contact['first_name'], 'David')
         self.assertEqual(
@@ -94,6 +94,20 @@ class ContactListViewsTest(TestCase):
         self.assertEqual(contact['workflowlevel2_uuids'],
                          [self.wflvl2])
 
+    def test_list_contacts_pagination_limit(self):
+        mfactories.Contact.create_batch(
+            size=51, **{'organization_uuid': self.organization_uuid,
+                        'last_name': 'Rabbit'})
+
+        request = self.factory.get('')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 50)
+        self.assertEqual(response.data['next'], 'http://testserver/?limit=50&offset=50')
+
     def test_list_contacts_diff_user_same_org(self):
         mfactories.Contact(
             first_name='David',
@@ -121,7 +135,7 @@ class ContactListViewsTest(TestCase):
         view = ContactViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_contacts_diff_org(self):
         mfactories.Contact(
@@ -151,7 +165,7 @@ class ContactListViewsTest(TestCase):
         view = ContactViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
     def test_list_contacts_ordering_asc(self):
         mfactories.Contact.create_batch(
@@ -163,9 +177,9 @@ class ContactListViewsTest(TestCase):
         view = ContactViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['first_name'], 'David')
-        self.assertEqual(response.data[1]['first_name'], 'Nina')
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(response.data['results'][0]['first_name'], 'David')
+        self.assertEqual(response.data['results'][1]['first_name'], 'Nina')
 
     def test_list_contacts_ordering_desc(self):
         mfactories.Contact.create_batch(
@@ -177,9 +191,9 @@ class ContactListViewsTest(TestCase):
         view = ContactViewSet.as_view({'get': 'list'})
         response = view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['first_name'], 'Nina')
-        self.assertEqual(response.data[1]['first_name'], 'David')
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(response.data['results'][0]['first_name'], 'Nina')
+        self.assertEqual(response.data['results'][1]['first_name'], 'David')
 
     def test_list_contacts_anonymoususer(self):
         request_get = self.factory.get('')

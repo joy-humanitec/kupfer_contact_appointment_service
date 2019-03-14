@@ -1,6 +1,6 @@
 from rest_framework import viewsets, filters
-from rest_framework.response import Response
 
+from crm.pagination import ContactLimitOffsetPagination
 from .models import Contact
 from .permissions import ContactPermission  # ContactPermission
 from .serializers import ContactSerializer
@@ -15,8 +15,9 @@ class ContactViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         organization_uuid = request.session.get('jwt_organization_uuid')
         queryset = queryset.filter(organization_uuid=organization_uuid)
+        queryset = self.paginate_queryset(queryset)
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
     def perform_create(self, serializer):
         core_user_uuid = self.request.session.get('jwt_core_user_uuid')
@@ -28,8 +29,9 @@ class ContactViewSet(viewsets.ModelViewSet):
         kwargs['partial'] = True
         return super(ContactViewSet, self).update(request, *args, **kwargs)
 
-    ordering_fields = ('first_name',)
+    ordering = ('first_name',)
     filter_backends = (filters.OrderingFilter,)
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
     permission_classes = (ContactPermission,)
+    pagination_class = ContactLimitOffsetPagination
