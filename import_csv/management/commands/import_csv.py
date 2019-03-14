@@ -24,7 +24,7 @@ def _split_full_name(full_name):
          the word with comma is treated as last name
     ---- When a user writes “-” between two words - it is treated as the last name .
     """
-    title = ''
+    title = None
     full_name = full_name.strip()
     if any(char.isdigit() for char in full_name):
         first_name, last_name = '', full_name
@@ -59,7 +59,7 @@ def _get_title_from_display(title_display):
     if title_display in title_displays:
         title_index = title_displays.index(title_display)
         return TITLE_CHOICES[title_index][0]
-    return ''
+    return None
 
 
 def _combine_field_rows_by_type(_type, field_name, *row_fields):
@@ -130,9 +130,12 @@ class Command(BaseCommand):
                     continue
                 # get or create contact by uuid
                 counter += 1
-                contact, created = Contact.objects.get_or_create(uuid=contact_uuid)
-                contact.workflowlevel1_uuids = [workflowlevel1_uuid, ]
-                contact.organization_uuid = organization_uuid
+                contact, created = Contact.objects.get_or_create(
+                    uuid=contact_uuid,
+                    defaults={'organization_uuid': organization_uuid,
+                              'workflowlevel1_uuids': [workflowlevel1_uuid, ]}
+                )
+
                 # get attributes
                 company = _merge_fields(row[self.row_map['D']], row[self.row_map['S']], row[self.row_map['F']])
                 full_name = row[self.row_map['E']]
