@@ -597,7 +597,7 @@ class ContactUpdateViewsTest(TestCase):
         response = view(request, pk=contact.pk)
         self.assertEqual(response.status_code, 403, response.data)
 
-    def test_update_contact_fails_blank_field(self):
+    def test_update_contact_allows_blank_field(self):
         contact = mfactories.Contact(
             core_user_uuid=self.session['jwt_core_user_uuid'],
             organization_uuid=self.organization_uuid,
@@ -617,9 +617,8 @@ class ContactUpdateViewsTest(TestCase):
 
         response = view(request, pk=contact.pk)
 
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data['last_name'],
-                         ['This field may not be blank.'])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['last_name'], '')
 
     def test_update_contact_fails_invalid_phone_schema(self):
         contact = mfactories.Contact(
