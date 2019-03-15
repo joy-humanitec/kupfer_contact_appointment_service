@@ -1,13 +1,20 @@
 import csv
+import json
 import os
 import string
 
+import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from contact.models import Contact, TITLE_CHOICES
 
 DEFAULT_FILE_NAME = 'TopKontor_Ritz.csv'
+URL_BIFROST = 'http://172.25.0.3:8080/'
+TIMEOUT_SECONDS = 10
+USERNAME = ''
+PASSWORD = ''
+CLIENT_ID = ''
 
 
 def _merge_fields(*args):
@@ -70,12 +77,38 @@ def _combine_field_rows_by_type(_type, field_name, *row_fields):
     return field_value
 
 
+def _get_authorization_headers():
+    login_url = URL_BIFROST + '/oauth/token/'
+    params = {
+        'client_id': CLIENT_ID,
+        'grant_type': 'password',
+        'username': USERNAME,
+        'password': PASSWORD,
+    }
+    response = requests.post(login_url, params, timeout=TIMEOUT_SECONDS)
+    headers = {
+        'Authorization': 'JWT ' + json.loads(response.content)['access_token_jwt'],
+        'Content-Type': 'application/json'
+    }
+    return headers
+
+
 class Command(BaseCommand):
     help = """
     Import CSV from a file.
     """
 
     row_map = dict()
+    # organization_uuid = 'fd383104-20fa-4156-93c0-fe75d10005ab'  # Ritz GmbH on production
+    # workflowlevel1_uuid = '6a4c8b6e-f90b-4554-b092-9a3a77bc00de'  # WorkflowLevel1.objects.get(name='Ritz
+    # GmbH').level1_uuid on production  # noqa
+    organization_uuid = '460c0ed6-445b-4204-8a6e-442ebb8b97a9'  # Test Import Organization on dev
+    workflowlevel1_uuid = '7f69cdd8-11ac-421e-88a2-a2f0334109a3'  # Test Import Wfl1 on dev
+    workflowlevel1_id = 1
+    headers = {}
+    cache_profile_type_ids = {}
+    row = []
+    counter = 0
 
     def __init__(self):
         """
@@ -89,6 +122,11 @@ class Command(BaseCommand):
             for j in string.ascii_uppercase:
                 self.row_map.update({i + j: count})
                 count += 1
+        # set headers
+        self.headers = _get_authorization_headers()
+
+    def _row(self, letter_index):
+        return self.row[self.row_map[letter_index]]
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -96,7 +134,65 @@ class Command(BaseCommand):
             help='Path of file to import.',
         )
 
-    def handle(self, *args, **options):
+    def _create_workflowlevel2(self):
+        url_create_wfl2 = URL_BIFROST + 'workflowlevel2/'
+        response = requests.post(url_create_wfl2,
+                                 headers=self.headers,
+                                 data=json.dumps({'name': 'FROM DATA IMPORT',
+                                                  'workflowlevel1': self.workflowlevel1_id}))
+        return json.loads(response.content)['level2_uuid']
+
+    def _get_or_create_profile_type(self, profile_type):
+        """Get or create profile_type."""
+        profile_type_id = None
+        if profile_type in self.cache_profile_type_ids:  # first check cache
+            profile_type_id = self.cache_profile_type_ids[profile_type]
+        else:
+            url_get_profile_types = URL_BIFROST + 'location/profiletypes'
+            response = requests.get(url_get_profile_types,
+                                    headers=self.headers,
+                                    timeout=TIMEOUT_SECONDS)
+            results = json.loads(response.content)['results']
+            # check if profile_type already in GET but not yet cached
+            for pt in results:
+                if pt['name'] == profile_type:
+                    profile_type_id = pt['id']
+                    break
+            if not profile_type_id:
+                url_create_profile_type = url_get_profile_types
+                response = requests.post(url_create_profile_type,
+                                         headers=self.headers,
+                                         data=json.dumps({"name": profile_type}),
+                                         timeout=TIMEOUT_SECONDS)
+                profile_type_id = json.loads(response.content)['id']
+            # add to cache
+            self.cache_profile_type_ids[profile_type] = profile_type_id
+        return profile_type_id
+
+    def _save_site_profile(self, profile_type, address_data, wfl2_uuid, site_profile_uuid=None):
+        """Create or update site profile with profile_type_id."""
+        profile_type_id = self._get_or_create_profile_type(profile_type)
+        site_profile_data = json.dumps({
+            'workflowlevel2_uuid': wfl2_uuid,
+            'profiletype': profile_type_id,
+            'country': 'DE',
+            **address_data}
+        )
+        if site_profile_uuid:
+            # update
+            url_update_site_profile = URL_BIFROST + f'location/siteprofiles/{site_profile_uuid}/'
+            requests.post(url_update_site_profile, headers=self.headers,
+                          data=site_profile_data, timeout=TIMEOUT_SECONDS)
+        else:
+            url_create_site_profile = URL_BIFROST + f'location/siteprofiles/'
+            response = requests.post(url_create_site_profile, headers=self.headers, data=site_profile_data)
+            # import pdb;
+            # pdb.set_trace()
+            site_profile_uuid = json.loads(response.content)['uuid']
+
+        return site_profile_uuid
+
+    def _import_contact(self):
         """
         - A - UUID
         - D - Company, merge with S and F
@@ -108,64 +204,121 @@ class Command(BaseCommand):
         - L: Fax phone number, merge with CG
         - AO: email, please merge with BD
         """
+        # get or create contact by uuid
+        contact_uuid = self._row('A')
+        contact, created = Contact.objects.get_or_create(
+            uuid=contact_uuid,
+            defaults={'organization_uuid': self.organization_uuid,
+                      'workflowlevel1_uuids': [self.workflowlevel1_uuid, ]}
+        )
 
-        file = getattr(options, 'file', DEFAULT_FILE_NAME)
+        # get attributes
+        company = _merge_fields(self._row('D'), self._row('S'), self._row('F'))
+        full_name = self._row('E')
+        title, first_name, last_name = _split_full_name(full_name)
+        office_phones = _combine_field_rows_by_type('office', 'number',
+                                                    self._row('K'), self._row('BE'),
+                                                    self._row('BF'), self._row('BI'))
+        home_phones = _combine_field_rows_by_type('home', 'number',
+                                                  self._row('M'), self._row('AK'),
+                                                  self._row('CE'), self._row('CF'))
+        fax_phones = _combine_field_rows_by_type('fax', 'number',
+                                                 self._row('L'), self._row('CG'))
+        phones = office_phones + home_phones + fax_phones
+        emails = _combine_field_rows_by_type('office', 'email',
+                                             self._row('AO'), self._row('BD'))
+        # set and save attributes
+        contact.company = company
+        if title:  # give title precedence to titles within the first_name
+            contact.title = title
+        else:
+            contact.title = _get_title_from_display(self._row('Q'))
+        contact.first_name = first_name
+        contact.last_name = last_name
+        contact.phones = phones
+        contact.emails = emails
 
-        print(f"Import contacts from {file}.")
+        # workflowlevel2_uuid
+        if not contact.workflowlevel2_uuids:
+            contact.workflowlevel2_uuids = [self._create_workflowlevel2(), ]
 
-        counter = 0
-        csv_path = os.path.join(settings.BASE_DIR, '..', 'data', 'crm_service', file)
+        contact.save()
 
-        # organization_uuid = 'fd383104-20fa-4156-93c0-fe75d10005ab'  # Ritz GmbH on production
-        # workflowlevel1_uuid = '6a4c8b6e-f90b-4554-b092-9a3a77bc00de'  # WorkflowLevel1.objects.get(name='Ritz GmbH').level1_uuid on production  # noqa
-        organization_uuid = '460c0ed6-445b-4204-8a6e-442ebb8b97a9'  # Test Import Organization on dev
-        workflowlevel1_uuid = '7f69cdd8-11ac-421e-88a2-a2f0334109a3'  # Test Import Wfl1 on dev
+        if created:
+            print(f"Contact with uuid={contact_uuid} created.")
+        else:
+            print(f"Contact with uuid={contact_uuid} updated.")
+
+        return contact.siteprofile_uuids, contact.workflowlevel2_uuids[0]
+
+    def _import_siteprofile(self, site_profile_uuids, wfl2_uuid):
+        """
+        If there is no data in BJ, BK, BL, then G, I, J are “object_with_billing”
+        If there is data in BJ, BK, BL, then it is saved as “object” and
+        G, I, J are saved as “billing”.
+
+        G - street & house number
+        I - post address
+        J - City
+
+        site_profile_uuid in contact is the billing address (must also have a wfl2_uuid)
+        object address needs only wfl2_uuid
+
+        site_profile_uuids[0] is per definition the billing-address
+        site_profile_uuids[1] is the object-address
+        """
+        billing_address_data = {
+            'address_line1': self._row('G'),
+            'postcode': self._row('I'),
+            'city': self._row('J')
+        }
+        billing_site_profile_uuid, object_site_profile_uuid = None, None
+        if site_profile_uuids:
+            billing_site_profile_uuid = site_profile_uuids[0]
+            if len(site_profile_uuids) > 1:
+                object_site_profile_uuid = site_profile_uuids[1]
+        if (self._row('BJ'), self._row('BK'), self._row('BL')) == ('', '', ''):  # additional_address
+            billing_site_profile_uuid = self._save_site_profile('object_with_billing', billing_address_data, wfl2_uuid,
+                                                                billing_site_profile_uuid)
+            print(f'SiteProfile for object_with_billing {billing_site_profile_uuid}.')
+            return [billing_site_profile_uuid, ]
+        else:
+            billing_site_profile_uuid = self._save_site_profile('billing', billing_address_data, wfl2_uuid,
+                                                                billing_site_profile_uuid)
+            object_address_data = {
+                'name': self._row('BJ'),
+                'address_line1': self._row('BK'),
+                'postcode': self._row('BL'),
+                'city': self._row('BM'),
+            }
+            object_site_profile_uuid = self._save_site_profile('object', object_address_data, wfl2_uuid,
+                                                               object_site_profile_uuid)
+            print(f'SiteProfile for billing {billing_site_profile_uuid}, for object {object_site_profile_uuid}.')
+            return billing_site_profile_uuid, object_site_profile_uuid
+
+    def _set_site_profile_uuid_on_contact(self, site_profile_uuids):
+        # get contact_uuid and set site_profile_uuids on contact
+        contact_uuid = self._row('A')
+        qs = Contact.objects.filter(uuid=contact_uuid)
+        qs.update(siteprofile_uuids=site_profile_uuids)
+
+    def parse_file(self, csv_path):
 
         with open(csv_path, 'rt') as csvfile:
             next(csvfile)  # skip first line
             next(csvfile)  # skip also second line (descriptions)
             for row in csv.reader(csvfile, delimiter=str(";"), dialect=csv.excel_tab):
-                contact_uuid = row[self.row_map['A']]
-                if not contact_uuid:
+                self.row = row
+                if not self._row('A'):
                     continue
-                # get or create contact by uuid
-                counter += 1
-                contact, created = Contact.objects.get_or_create(
-                    uuid=contact_uuid,
-                    defaults={'organization_uuid': organization_uuid,
-                              'workflowlevel1_uuids': [workflowlevel1_uuid, ]}
-                )
+                self.counter += 1
+                site_profile_uuids, wfl2_uuid = self._import_contact()
+                site_profile_uuids = self._import_siteprofile(site_profile_uuids, wfl2_uuid)
+                self._set_site_profile_uuid_on_contact(site_profile_uuids)
+        print(f"%s contacts parsed." % self.counter)
 
-                # get attributes
-                company = _merge_fields(row[self.row_map['D']], row[self.row_map['S']], row[self.row_map['F']])
-                full_name = row[self.row_map['E']]
-                title, first_name, last_name = _split_full_name(full_name)
-                office_phones = _combine_field_rows_by_type('office', 'number',
-                                                            row[self.row_map['K']], row[self.row_map['BE']],
-                                                            row[self.row_map['BF']], row[self.row_map['BI']])
-                home_phones = _combine_field_rows_by_type('home', 'number',
-                                                          row[self.row_map['M']], row[self.row_map['AK']],
-                                                          row[self.row_map['CE']], row[self.row_map['CF']])
-                fax_phones = _combine_field_rows_by_type('fax', 'number',
-                                                         row[self.row_map['L']], row[self.row_map['CG']])
-                phones = office_phones + home_phones + fax_phones
-                emails = _combine_field_rows_by_type('office', 'email',
-                                                     row[self.row_map['AO']], row[self.row_map['BD']])
-                # set and save attributes
-                contact.company = company
-                if title:  # give title precedence to titles within the first_name
-                    contact.title = title
-                else:
-                    contact.title = _get_title_from_display(row[self.row_map['Q']])
-                contact.first_name = first_name
-                contact.last_name = last_name
-                contact.phones = phones
-                contact.emails = emails
-                contact.save()
-
-                if created:
-                    print(f"Contact with {contact_uuid} created.")
-                else:
-                    print(f"Contact with {contact_uuid} updated.")
-
-        print(f"%s contacts parsed." % counter)
+    def handle(self, *args, **options):
+        file = getattr(options, 'file', DEFAULT_FILE_NAME)
+        csv_path = os.path.join(settings.BASE_DIR, '..', 'data', 'crm_service', file)
+        print(f"Import data from {file}.")
+        self.parse_file(csv_path)
