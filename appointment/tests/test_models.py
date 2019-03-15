@@ -71,17 +71,6 @@ class AppointmentTest(TestCase):
 
         self.assertRaises(ValidationError, appointment.save)
 
-    def test_appointment_save_fails_missing_name(self):
-        appointment = Appointment(
-            owner=self.user_uuid,
-            start_date=datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
-            end_date=datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
-            address="Teststreet 123",
-            type=["Test Type"]
-        )
-
-        self.assertRaises(ValidationError, appointment.save)
-
     def test_appointment_save_fails_missing_start_date(self):
         appointment = Appointment(
             owner=self.user_uuid,
@@ -106,19 +95,6 @@ class AppointmentTest(TestCase):
 
         self.assertRaisesWithMessage(
             ValidationError, 'end_date is not of type datetime.',
-            appointment.save)
-
-    def test_appointment_save_fails_missing_address(self):
-        appointment = Appointment(
-            owner=self.user_uuid,
-            name="Test Name 2",
-            start_date=datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
-            end_date=datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
-            type=["Test Type"]
-        )
-
-        self.assertRaisesWithMessageDict(
-            ValidationError, {'address': ['This field cannot be blank.']},
             appointment.save)
 
     def test_appointment_save_fails_missing_type(self):

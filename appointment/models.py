@@ -36,11 +36,11 @@ class AppointmentNote(models.Model):
 class Appointment(SearchServiceIntegrationMixin, models.Model):
     uuid = models.UUIDField(db_index=True, default=uuid.uuid4, editable=False)
     owner = models.UUIDField()
-    name = models.CharField(max_length=50, help_text='Name')
+    name = models.CharField(max_length=50, help_text='Name', blank=True)
     start_date = models.DateTimeField(help_text='Start date')
     end_date = models.DateTimeField(help_text='End date')
     type = ArrayField(models.CharField(max_length=50))
-    address = models.CharField(max_length=100, help_text='Address')
+    address = models.CharField(max_length=100, help_text='Address', blank=True)
     siteprofile_uuid = models.UUIDField(
         blank=True, null=True, help_text='Address where it takes place')
     invitee_uuids = ArrayField(
