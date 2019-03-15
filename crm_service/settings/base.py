@@ -162,7 +162,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'crm.permissions.AllowOptionsAuthentication',
-    )
+    ),
+    'EXCEPTION_HANDLER': 'crm.handlers.custom_exception_handler',
 }
 
 

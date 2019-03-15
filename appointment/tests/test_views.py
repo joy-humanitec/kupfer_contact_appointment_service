@@ -950,6 +950,7 @@ class AppointmentCreateViewsTest(TestCase):
         view = AppointmentViewSet.as_view({'post': 'create'})
         response = view(request)
         self.assertEqual(response.status_code, 400)
+        self.assertIn("Start date cannot be later than end date.", str(response.content))
 
     def test_create_appointment_fails_empty_type_array(self):
         data = {
