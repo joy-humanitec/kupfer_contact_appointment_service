@@ -897,6 +897,26 @@ class AppointmentCreateViewsTest(TestCase):
         self.assertEqual(response.data['organization_uuid'],
                          str(self.organization_uuid))
 
+    def test_create_appointment_empty_name_and_address(self):
+        start_date = datetime(2018, 1, 1, 12, 15)\
+            .strftime("%Y-%m-%dT%H:%M:%S+01:00")
+        end_date = datetime(2018, 1, 1, 12, 30)\
+            .strftime("%Y-%m-%dT%H:%M:%S+01:00")
+
+        data = {
+            'start_date': start_date,
+            'end_date': end_date,
+            'type': ['Test Type'],
+        }
+        request = self.factory.post('', data)
+        request.user = self.user
+        request.session = self.session
+        view = AppointmentViewSet.as_view({'post': 'create'})
+        response = view(request).render()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(json.loads(response.content)['start_date'],
+                         str(start_date))
+
     def test_create_appointment_anonymoususer(self):
         request = self.factory.post('', {})
         view = AppointmentViewSet.as_view({'post': 'create'})
@@ -905,8 +925,7 @@ class AppointmentCreateViewsTest(TestCase):
 
     def test_create_appointment_fails_empty_field(self):
         data = {
-            'name': '',
-            'start_date': datetime(2018, 1, 1, 12, 15),
+            'start_date': '',
             'end_date': datetime(2018, 1, 1, 12, 30),
             'address': 'Teststreet 123',
             'type': ['Test Type']
@@ -937,10 +956,8 @@ class AppointmentCreateViewsTest(TestCase):
 
     def test_create_appointment_fails_date_range(self):
         data = {
-            'name': '',
             'start_date': datetime(2018, 1, 1, 12, 15),
             'end_date': datetime(2018, 1, 1, 11, 30),
-            'address': 'Teststreet 123',
             'type': ['Test Type']
         }
 
@@ -1161,7 +1178,7 @@ class AppointmentUpdateViewsTest(TestCase):
         )
 
         data = {
-            'name': '',
+            'start_date': '',
         }
 
         request = self.factory.post('', data)
