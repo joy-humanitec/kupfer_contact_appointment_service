@@ -22,10 +22,3 @@ class CrmConfigTest(TestCase):
     def test_apps(self):
         self.assertEqual(CrmConfig.name, 'crm')
         self.assertEqual(apps.get_app_config('crm').name, 'crm')
-
-
-class SearchServiceTest(TestCase):
-
-    def test_required_settings(self):
-        self.assertIsNotNone(os.getenv('JWT_ISSUER'))
-        self.assertIsNotNone(os.getenv('SEARCH_SERVICE_URL'))

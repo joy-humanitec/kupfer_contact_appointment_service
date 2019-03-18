@@ -170,8 +170,6 @@ REST_FRAMEWORK = {
 # JWT Configuration
 
 JWT_AUTH_DISABLED = True
-JWT_ISSUER = os.getenv('JWT_ISSUER')
-JWT_PRIVATE_KEY_RSA_CRMSERVICE = os.getenv('JWT_PRIVATE_KEY_RSA_CRMSERVICE')
 JWT_ALLOWED_ISSUER = 'bifrost'
 JWT_PUBLIC_KEY_RSA_BIFROST = os.getenv('JWT_PUBLIC_KEY_RSA_BIFROST')
 
@@ -207,8 +205,3 @@ LOGGING = {
         },
     },
 }
-
-
-# Search Service
-
-SEARCH_SERVICE_ENABLED = True if os.getenv('SEARCH_SERVICE_ENABLED') == 'True' else False

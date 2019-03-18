@@ -5,9 +5,6 @@ from django.db import models
 
 from .validators import validate_emails, validate_phones, validate_addresses
 
-from search_service_integration.mixins import SearchServiceIntegrationMixin
-from search_service_integration.managers import SearchServiceIntegrationManager
-
 
 TITLE_CHOICES = (
     ('prof dr', 'Prof. Dr.'),
@@ -59,7 +56,7 @@ EMAIL_TYPE_CHOICES = (
 )
 
 
-class Contact(SearchServiceIntegrationMixin, models.Model):
+class Contact(models.Model):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     core_user_uuid = models.UUIDField(blank=True, null=True)
     first_name = models.CharField(max_length=50, blank=True, help_text='First name')
@@ -119,9 +116,3 @@ class Contact(SearchServiceIntegrationMixin, models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-
-    objects = SearchServiceIntegrationManager()
-
-    def get_index_serializer(self):
-        from .serializers import ContactIndexSerializer
-        return ContactIndexSerializer(self)
