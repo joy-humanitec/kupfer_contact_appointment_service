@@ -271,8 +271,6 @@ class ContactCreateViewsTest(TestCase):
 
     def test_create_contact_minimal(self):
         data = {
-            'first_name': 'Máx',
-            'last_name': 'Cöoper',
             'organization_uuid': 'ignore_this',
             'workflowlevel1_uuids': [self.wflvl1],
             'title_display': 'Dr.',
@@ -289,8 +287,6 @@ class ContactCreateViewsTest(TestCase):
         contact = Contact.objects.get(pk=response.data['id'])
         self.assertEqual(contact.core_user_uuid, self.session[
             'jwt_core_user_uuid'])
-        self.assertEqual(contact.first_name, data['first_name'])
-        self.assertEqual(contact.last_name, data['last_name'])
         self.assertEqual(contact.organization_uuid, self.organization_uuid)
 
     def test_create_contact_org_and_user_set_by_jwt(self):
