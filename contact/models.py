@@ -63,8 +63,7 @@ class Contact(SearchServiceIntegrationMixin, models.Model):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     core_user_uuid = models.UUIDField(blank=True, null=True)
     first_name = models.CharField(max_length=50, blank=True, help_text='First name')
-    middle_name = models.CharField(max_length=50, blank=True, null=True,
-                                   help_text='Middle name (not common in Germany)')
+    middle_name = models.CharField(max_length=50, blank=True, help_text='Middle name (not common in Germany)')
     last_name = models.CharField(max_length=50, blank=True, help_text='Surname or family name')
     title = models.CharField(
         max_length=16, choices=TITLE_CHOICES, blank=True, null=True,
