@@ -8,9 +8,6 @@ from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import validate_email
 
-from search_service_integration.mixins import SearchServiceIntegrationMixin
-from search_service_integration.managers import SearchServiceIntegrationManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +30,7 @@ class AppointmentNote(models.Model):
         return f'{self.type} - {self.note[:10]}'
 
 
-class Appointment(SearchServiceIntegrationMixin, models.Model):
+class Appointment(models.Model):
     uuid = models.UUIDField(db_index=True, default=uuid.uuid4, editable=False)
     owner = models.UUIDField()
     name = models.CharField(max_length=50, help_text='Name', blank=True)
@@ -67,12 +64,6 @@ class Appointment(SearchServiceIntegrationMixin, models.Model):
 
     def __str__(self):
         return f'{self.name} {self.start_date}'
-
-    objects = SearchServiceIntegrationManager()
-
-    def get_index_serializer(self):
-        from .serializers import AppointmentSerializer
-        return AppointmentSerializer(self)
 
 
 class AppointmentNotification(models.Model):

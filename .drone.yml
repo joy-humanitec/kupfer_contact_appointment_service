@@ -20,18 +20,6 @@ pipeline:
       DATABASE_PASSWORD: "root"
       DATABASE_HOST: "postgres"
       DATABASE_PORT: "5432"
-      JWT_ISSUER: "crmservice"
-      JWT_PRIVATE_KEY_RSA_CRMSERVICE: |-
-        -----BEGIN RSA PRIVATE KEY-----
-        MIIBOgIBAAJBAMtUe741n497BS4syFvey617qA+b4DQSyHj4xE0ZH5qRuk/A42i5
-        zUJidSkFs1Wvq9ShOamST1vrmHriBrYYu7MCAwEAAQJBAI2hUXiSvYwh8t/RDdcA
-        f/tdkRkeSLO9CatKDOJvR5ZQAL5+7iNHTMGOC2FCU3WKSdlEo/xW3kD6omYbIWPk
-        hXECIQD58w4Zl3FSaoWBhBmmyJF08cOQP2Z8amewd70LV0LNlQIhANBAhrTxnDG2
-        KprAffkxjcrV/6ZWC5kGqckTNUUhf0InAiBbosNpmH8gYxM9L4wj/GZvhG9ZRBUz
-        yeLn7I4vSTehnQIgJEaZMHvF0YMB+OL/DqFrKaINXlQuwQFAIh6OcPRczpECICpM
-        q/qlwzGMpOD6blcWDUqgS6HXpS73To/F8RE56FP+
-        -----END RSA PRIVATE KEY-----
-      SEARCH_SERVICE_URL: "http://searchservice.local:8001"
       SECRET_KEY: "nothing"
     when:
       event: [pull_request, push, tag]

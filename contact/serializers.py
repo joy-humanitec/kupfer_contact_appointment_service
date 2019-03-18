@@ -18,14 +18,3 @@ class ContactNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = ('uuid', 'first_name', 'middle_name', 'last_name')
-
-
-class ContactIndexSerializer(serializers.ModelSerializer):
-    """
-    Serializer for saving to ElasticSearchIndex.
-    """
-    organization_uuid = serializers.ReadOnlyField()
-
-    class Meta:
-        model = Contact
-        fields = '__all__'
