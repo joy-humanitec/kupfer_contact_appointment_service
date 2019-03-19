@@ -10,11 +10,17 @@ from django.core.management.base import BaseCommand
 from contact.models import Contact, TITLE_CHOICES
 
 DEFAULT_FILE_NAME = 'TopKontor_Ritz.csv'
-URL_BIFROST = 'http://172.25.0.3:8080/'
-TIMEOUT_SECONDS = 10
+TIMEOUT_SECONDS = 30
+URL_BIFROST = ''
 USERNAME = ''
 PASSWORD = ''
 CLIENT_ID = ''
+# ORGANIZATION_UUID = 'fd383104-20fa-4156-93c0-fe75d10005ab'  # Ritz GmbH on production
+# workflowlevel1_uuid = '6a4c8b6e-f90b-4554-b092-9a3a77bc00de'  # WorkflowLevel1.objects.get(name='Ritz
+# GmbH').level1_uuid on production  # noqa
+ORGANIZATION_UUID = '460c0ed6-445b-4204-8a6e-442ebb8b97a9'  # Test Import Organization on dev
+WORKFLOWLEVEL1_UUID = '7f69cdd8-11ac-421e-88a2-a2f0334109a3'  # Test Import Wfl1 on dev
+WORKFLOWLEVEL1_ID = 15
 
 
 def _merge_fields(*args):
@@ -86,6 +92,8 @@ def _get_authorization_headers():
         'password': PASSWORD,
     }
     response = requests.post(login_url, params, timeout=TIMEOUT_SECONDS)
+    if response.status_code != 200:
+        raise PermissionError(response.content)
     headers = {
         'Authorization': 'JWT ' + json.loads(response.content)['access_token_jwt'],
         'Content-Type': 'application/json'
@@ -99,12 +107,6 @@ class Command(BaseCommand):
     """
 
     row_map = dict()
-    # organization_uuid = 'fd383104-20fa-4156-93c0-fe75d10005ab'  # Ritz GmbH on production
-    # workflowlevel1_uuid = '6a4c8b6e-f90b-4554-b092-9a3a77bc00de'  # WorkflowLevel1.objects.get(name='Ritz
-    # GmbH').level1_uuid on production  # noqa
-    organization_uuid = '460c0ed6-445b-4204-8a6e-442ebb8b97a9'  # Test Import Organization on dev
-    workflowlevel1_uuid = '7f69cdd8-11ac-421e-88a2-a2f0334109a3'  # Test Import Wfl1 on dev
-    workflowlevel1_id = 1
     headers = {}
     cache_profile_type_ids = {}
     row = []
@@ -139,7 +141,7 @@ class Command(BaseCommand):
         response = requests.post(url_create_wfl2,
                                  headers=self.headers,
                                  data=json.dumps({'name': 'FROM DATA IMPORT',
-                                                  'workflowlevel1': self.workflowlevel1_id}))
+                                                  'workflowlevel1': WORKFLOWLEVEL1_ID}))
         return json.loads(response.content)['level2_uuid']
 
     def _get_or_create_profile_type(self, profile_type):
@@ -181,8 +183,10 @@ class Command(BaseCommand):
         if site_profile_uuid:
             # update
             url_update_site_profile = URL_BIFROST + f'location/siteprofiles/{site_profile_uuid}/'
-            requests.post(url_update_site_profile, headers=self.headers,
-                          data=site_profile_data, timeout=TIMEOUT_SECONDS)
+            response = requests.put(url_update_site_profile, headers=self.headers,
+                                    data=site_profile_data, timeout=TIMEOUT_SECONDS)
+            if response.status_code != 200:
+                print(f'Error when updating SiteProfile: {site_profile_uuid}')
         else:
             url_create_site_profile = URL_BIFROST + f'location/siteprofiles/'
             response = requests.post(url_create_site_profile, headers=self.headers, data=site_profile_data)
@@ -208,8 +212,8 @@ class Command(BaseCommand):
         contact_uuid = self._row('A')
         contact, created = Contact.objects.get_or_create(
             uuid=contact_uuid,
-            defaults={'organization_uuid': self.organization_uuid,
-                      'workflowlevel1_uuids': [self.workflowlevel1_uuid, ]}
+            defaults={'organization_uuid': ORGANIZATION_UUID,
+                      'workflowlevel1_uuids': [WORKFLOWLEVEL1_UUID, ]}
         )
 
         # get attributes
@@ -245,9 +249,9 @@ class Command(BaseCommand):
         contact.save()
 
         if created:
-            print(f"Contact with uuid={contact_uuid} created.")
+            print(f"{self.counter}: Contact with uuid={contact_uuid} created.")
         else:
-            print(f"Contact with uuid={contact_uuid} updated.")
+            print(f"{self.counter}: Contact with uuid={contact_uuid} updated.")
 
         return contact.siteprofile_uuids, contact.workflowlevel2_uuids[0]
 
@@ -268,6 +272,7 @@ class Command(BaseCommand):
         site_profile_uuids[1] is the object-address
         """
         billing_address_data = {
+            'name': f"{self._row('G')}, {self._row('I')} {self._row('J')}",
             'address_line1': self._row('G'),
             'postcode': self._row('I'),
             'city': self._row('J')
@@ -286,7 +291,8 @@ class Command(BaseCommand):
             billing_site_profile_uuid = self._save_site_profile('billing', billing_address_data, wfl2_uuid,
                                                                 billing_site_profile_uuid)
             object_address_data = {
-                'name': self._row('BJ'),
+                # 'name': self._row('BJ'),  # import this later when we have a different structure
+                'name': f"{self._row('BK')}, {self._row('BL')} {self._row('BM')}",
                 'address_line1': self._row('BK'),
                 'postcode': self._row('BL'),
                 'city': self._row('BM'),
@@ -315,7 +321,7 @@ class Command(BaseCommand):
                 site_profile_uuids, wfl2_uuid = self._import_contact()
                 site_profile_uuids = self._import_siteprofile(site_profile_uuids, wfl2_uuid)
                 self._set_site_profile_uuid_on_contact(site_profile_uuids)
-        print(f"%s contacts parsed." % self.counter)
+        print(f"{self.counter} contacts parsed.")
 
     def handle(self, *args, **options):
         file = getattr(options, 'file', DEFAULT_FILE_NAME)
