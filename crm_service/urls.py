@@ -10,7 +10,7 @@ from drf_yasg import openapi
 swagger_info = openapi.Info(
         title="CRM Service API",
         default_version='latest',
-        description="Test description",
+        description="A microservice for managing contacts and appointments.",
 )
 
 schema_view = get_schema_view(
