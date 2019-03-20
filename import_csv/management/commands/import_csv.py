@@ -1,4 +1,5 @@
 import csv
+import datetime
 import json
 import os
 import string
@@ -186,12 +187,10 @@ class Command(BaseCommand):
             response = requests.put(url_update_site_profile, headers=self.headers,
                                     data=site_profile_data, timeout=TIMEOUT_SECONDS)
             if response.status_code != 200:
-                print(f'Error when updating SiteProfile: {site_profile_uuid}')
+                print(f'Error when updating SiteProfile: {site_profile_uuid} - status_code: {response.status_code}')
         else:
             url_create_site_profile = URL_BIFROST + f'location/siteprofiles/'
             response = requests.post(url_create_site_profile, headers=self.headers, data=site_profile_data)
-            # import pdb;
-            # pdb.set_trace()
             site_profile_uuid = json.loads(response.content)['uuid']
 
         return site_profile_uuid
@@ -303,10 +302,69 @@ class Command(BaseCommand):
             return billing_site_profile_uuid, object_site_profile_uuid
 
     def _set_site_profile_uuid_on_contact(self, site_profile_uuids):
-        # get contact_uuid and set site_profile_uuids on contact
+        """Get contact_uuid and set site_profile_uuids on contact."""
         contact_uuid = self._row('A')
         qs = Contact.objects.filter(uuid=contact_uuid)
         qs.update(siteprofile_uuids=site_profile_uuids)
+
+    def _check_product_existence(self, wfl2_uuid, product_name):
+        """Check if product already exists."""
+        url_get_products = URL_BIFROST + 'products/products'
+        response = requests.get(url_get_products,
+                                params={'workflowlevel2_uuid': wfl2_uuid},
+                                headers=self.headers)
+        content = json.loads(response.content)
+        for product in content:
+            if product['name'] == product_name:
+                return product['uuid']
+        return None
+
+    def _get_date_from_row(self, value):
+        """Check for date in self._row('AD') (year, date, only first product)."""
+        if any(char.isdigit() for char in value) and len(value) == 4:
+            value = f"01.01.{value}"
+        date_format = '%d.%m.%Y'
+        try:
+            value = datetime.datetime.strptime(value, date_format)
+        except ValueError:
+            return None
+        return str(value)
+
+    def _update_product(self, product_uuid, product_data):
+        url_update_product = URL_BIFROST + f'products/products/{product_uuid}'
+        response = requests.patch(url_update_product, headers=self.headers, data=json.dumps(product_data))
+        if response.status_code == 200:
+            print(f"Product with uuid=product_uuid updated.")
+        else:
+            print(f"Error when updating Product with uuid=product_uuid.")
+            print(response.content)
+
+    def _create_product(self, product_data):
+        url_create_product = URL_BIFROST + 'products/products/'
+        response = requests.post(url_create_product, headers=self.headers, data=json.dumps(product_data))
+        if response.status_code == 201:
+            print(f"Product with uuid={json.loads(response.content)['uuid']} created.")
+        else:
+            print(f"Error when creating Product: {product_data['name']}")
+            print(response.content)
+
+    def _import_product(self, wfl2_uuid):
+        product_names = (self._row('AE'), self._row('AF'), self._row('AG'),
+                         self._row('AH'), self._row('AI'), self._row('AJ'))
+        initial_product_data = {
+            'workflowlevel2_uuid': wfl2_uuid,
+        }
+        installation_date = self._get_date_from_row(self._row('AD'))
+        for i, product_name in enumerate(product_names):
+            if product_name:
+                product_uuid = self._check_product_existence(wfl2_uuid, product_name)
+                product_data = {'name': product_name, **initial_product_data}
+                if i == 0 and installation_date:
+                    product_data['installation_date'] = installation_date
+                if product_uuid:
+                    self._update_product(product_uuid, product_data)
+                else:
+                    self._create_product(product_data)
 
     def parse_file(self, csv_path):
 
@@ -321,6 +379,7 @@ class Command(BaseCommand):
                 site_profile_uuids, wfl2_uuid = self._import_contact()
                 site_profile_uuids = self._import_siteprofile(site_profile_uuids, wfl2_uuid)
                 self._set_site_profile_uuid_on_contact(site_profile_uuids)
+                self._import_product(wfl2_uuid)
         print(f"{self.counter} contacts parsed.")
 
     def handle(self, *args, **options):
