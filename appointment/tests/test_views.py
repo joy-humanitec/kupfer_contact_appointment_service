@@ -14,7 +14,7 @@ from django.core import mail
 from . import model_factories as mfactories
 from contact.tests import model_factories as contact_mfactories
 from ..models import Appointment, AppointmentNotification, AppointmentNote
-from ..views import AppointmentViewSet, AppointmentNotificationViewSet
+from ..views import AppointmentViewSet, AppointmentNotificationViewSet, AppointmentNoteViewSet
 
 
 class AppointmentListViewsTest(TestCase):
@@ -1431,3 +1431,117 @@ class AppointmentNotificationUpdateViewsTest(TestCase):
         view = AppointmentNotificationViewSet.as_view({'post': 'update'})
         response = view(request)
         self.assertEqual(response.status_code, 403)
+
+
+class AppointmentNoteViewsRetrieveTest(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.user = contact_mfactories.User()
+        self.core_user_uuid = uuid.uuid4()
+        self.organization_uuid = str(uuid.uuid4())
+        self.session = {
+            'jwt_organization_uuid': self.organization_uuid,
+            'jwt_username': 'Test User',
+            'jwt_core_user_uuid': self.core_user_uuid
+        }
+
+    def test_retrieve_appointment_note(self):
+        appointment = mfactories.Appointment(
+            owner=self.core_user_uuid,
+            organization_uuid=self.organization_uuid,
+        )
+        appointment_note = mfactories.AppointmentNote()
+        appointment.notes.add(appointment_note)
+
+        request = self.factory.get('')
+        request.user = self.user
+        request.session = self.session
+
+        view = AppointmentNoteViewSet.as_view({'get': 'retrieve'})
+        response = view(request, pk=appointment_note.pk)
+        self.assertEqual(response.status_code, 200)
+
+    def test_retrieve_appointment_note_permission_failed(self):
+        appointment = mfactories.Appointment(
+            owner=self.core_user_uuid,
+            organization_uuid=str(uuid.uuid4()),
+        )
+        appointment_note = mfactories.AppointmentNote()
+        appointment.notes.add(appointment_note)
+
+        request = self.factory.get('')
+        request.user = self.user
+        request.session = self.session
+
+        view = AppointmentNoteViewSet.as_view({'get': 'retrieve'})
+        response = view(request, pk=appointment_note.pk)
+        self.assertEqual(response.status_code, 403)
+
+
+class AppointmentNoteViewsUpdateTest(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.user = contact_mfactories.User()
+        self.core_user_uuid = uuid.uuid4()
+        self.organization_uuid = str(uuid.uuid4())
+        self.session = {
+            'jwt_organization_uuid': self.organization_uuid,
+            'jwt_username': 'Test User',
+            'jwt_core_user_uuid': self.core_user_uuid
+        }
+
+    def test_update_appointment_note(self):
+        appointment = mfactories.Appointment(
+            owner=self.core_user_uuid,
+            organization_uuid=self.organization_uuid,
+        )
+        appointment_note = mfactories.AppointmentNote(note="something")
+        appointment.notes.add(appointment_note)
+
+        self.assertEqual(appointment.notes.all()[0].note, "something")
+
+        data = {
+            "note": "Note Note Note",
+        }
+
+        request = self.factory.patch('', data)
+        request.user = self.user
+        request.session = self.session
+
+        view = AppointmentNoteViewSet.as_view({'patch': 'update'})
+        response = view(request, pk=appointment_note.pk)
+        self.assertEqual(response.status_code, 200)
+        response.render()
+        self.assertEqual(json.loads(response.content)["note"], "Note Note Note")
+
+class AppointmentNoteViewsDeleteTest(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.user = contact_mfactories.User()
+        self.core_user_uuid = uuid.uuid4()
+        self.organization_uuid = str(uuid.uuid4())
+        self.session = {
+            'jwt_organization_uuid': self.organization_uuid,
+            'jwt_username': 'Test User',
+            'jwt_core_user_uuid': self.core_user_uuid
+        }
+
+    def test_delete_appointment_note(self):
+        appointment = mfactories.Appointment(
+            owner=self.core_user_uuid,
+            organization_uuid=self.organization_uuid,
+        )
+        appointment_note = mfactories.AppointmentNote(note="something")
+        appointment.notes.add(appointment_note)
+
+        self.assertEqual(appointment.notes.all()[0].note, "something")
+
+        request = self.factory.delete('')
+        request.user = self.user
+        request.session = self.session
+
+        view = AppointmentNoteViewSet.as_view({'delete': 'destroy'})
+        response = view(request, pk=appointment_note.pk)
+
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(appointment.notes.count(), 0)

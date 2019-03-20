@@ -22,14 +22,6 @@ NOTE_TYPES = (
 )
 
 
-class AppointmentNote(models.Model):
-    note = models.TextField()
-    type = models.PositiveSmallIntegerField(choices=NOTE_TYPES, default=1, help_text='Choices: {}'.format(", ".join([str(kv[0]) for kv in NOTE_TYPES])))
-
-    def __str__(self):
-        return f'{self.type} - {self.note[:10]}'
-
-
 class Appointment(models.Model):
     uuid = models.UUIDField(db_index=True, default=uuid.uuid4, editable=False)
     owner = models.UUIDField()
@@ -44,10 +36,10 @@ class Appointment(models.Model):
         models.UUIDField(), blank=True, null=True,
         help_text='List of CoreUser UUIDs invited to the appointment.')
     organization_uuid = models.UUIDField(blank=True, null=True)
+    notes = models.ManyToManyField('appointment.AppointmentNote')
     workflowlevel2_uuids = ArrayField(
         models.UUIDField(), blank=True, null=True,
         help_text='List of WorkflowLevel2s added to the appointment.')
-    notes = models.ManyToManyField(AppointmentNote)
     contact_uuid = models.UUIDField(blank=True, null=True)
 
     def clean(self):
@@ -64,6 +56,14 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f'{self.name} {self.start_date}'
+
+
+class AppointmentNote(models.Model):
+    note = models.TextField()
+    type = models.PositiveSmallIntegerField(choices=NOTE_TYPES, default=1, help_text='Choices: {}'.format(", ".join([str(kv[0]) for kv in NOTE_TYPES])))
+
+    def __str__(self):
+        return f'{self.type} - {self.note[:10]}'
 
 
 class AppointmentNotification(models.Model):
