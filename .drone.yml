@@ -73,7 +73,7 @@ pipeline:
       - git config --global user.name "HumanitecBot"
       - git clone git@github.com:Humanitec/docs-site.git
       - mkdir -p docs-site/hugo/content/marketplace/crm-module/crm-service/
-      - mkdir -p docs-site/api/marketplace/documents-service/
+      - mkdir -p docs-site/api/marketplace/crm-service/
       - cd docs-site/hugo/content/marketplace/crm-module/crm-service/
       - cp ../../../../../../README.md _index.md -r
       - cd ../../../../../api/marketplace/crm-service
