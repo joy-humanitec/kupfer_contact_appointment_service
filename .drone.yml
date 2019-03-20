@@ -56,3 +56,42 @@ pipeline:
     when:
       event: [tag]
       status: [success]
+  deploy-docs:
+    image: python:3.6
+    commands:
+      - bash scripts/tcp-port-wait.sh postgres 5432
+      - pip install -r requirements/base.txt
+      - python manage.py generate_swagger > swagger.json
+      - eval "$(ssh-agent -s)"
+      - mkdir -p /root/.ssh
+      - echo "$${SSH_KEY}\n" > /root/.ssh/id_rsa
+      - echo "$${SSH_PUBLIC_KEY}\n" > /root/.ssh/id_rsa.pub
+      - ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
+      - chmod 600 /root/.ssh/id_rsa*
+      - ssh-add -k /root/.ssh/id_rsa
+      - git config --global user.email "engine@humanitec.com"
+      - git config --global user.name "HumanitecBot"
+      - git clone git@github.com:Humanitec/docs-site.git
+      - mkdir -p docs-site/hugo/content/marketplace/crm-module/crm-service/
+      - mkdir -p docs-site/api/marketplace/crm-service/
+      - cd docs-site/hugo/content/marketplace/crm-module/crm-service/
+      - cp ../../../../../../README.md _index.md -r
+      - cd ../../../../../api/marketplace/crm-service
+      - cp ../../../../swagger.json swagger.json -r
+      - cd ../../../
+      - git add .
+      - git diff-index --quiet HEAD || git commit -m "Updated documentation for CRM service"
+      - git push origin master
+    secrets: [NPM_USER, NPM_EMAIL, SSH_KEY, SSH_PUBLIC_KEY]
+    when:
+      event: [push, tag]
+      branch: [master]
+      status: [success]
+    environment:
+      - DATABASE_ENGINE=postgresql
+      - DATABASE_NAME=db
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - SECRET_KEY=nothing 
