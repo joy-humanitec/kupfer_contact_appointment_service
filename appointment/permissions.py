@@ -24,6 +24,20 @@ class OrganizationPermission(AllowOptionsAuthentication):
                                        'as the object.')
 
 
+class AppointmentNoteOrganizationPermission(OrganizationPermission):
+    def has_object_permission(self, request, view, appointmentnote):
+        if request.user.is_superuser:
+            return True
+        # the appointment-lookup is not optimal due to M2M, should be FK on Appointment
+        if appointmentnote.appointment_set.count() and \
+                request.session.get('jwt_organization_uuid') == str(
+                appointmentnote.appointment_set.first().organization_uuid):
+            return True
+        else:
+            raise PermissionDenied('User is not in the same organization '
+                                   'as the object.')
+
+
 class AppointmentNotificationPermission(OrganizationPermission):
     def has_permission(self, request, view):
         return super(AppointmentNotificationPermission,
