@@ -1061,6 +1061,25 @@ class AppointmentUpdateViewsTest(TestCase):
                           {"id": 2, "note": "New note 2", "type": 2}])
         self.assertEqual(AppointmentNote.objects.count(), 2)
 
+    def test_update_appointment_with_an_empty_note(self):
+        appointment = mfactories.Appointment(
+            owner=self.core_user_uuid,
+            organization_uuid=self.organization_uuid
+        )
+        data = {
+            'notes': [{"note": "",
+                       "type": 1}],
+        }
+        request = self.factory.post('', data, format='json')
+        request.user = self.user
+        request.session = self.session
+        view = AppointmentViewSet.as_view({'post': 'update'})
+        response = view(request, uuid=appointment.uuid)
+
+        self.assertEqual(response.status_code, 200)
+        appointment = Appointment.objects.get(id=response.data['id'])
+        self.assertEqual(appointment.notes.get().note, "")
+
     def test_update_appointment_without_notes(self):
         appointment = mfactories.Appointment(
             owner=self.core_user_uuid,
@@ -1503,6 +1522,7 @@ class AppointmentNoteViewsUpdateTest(TestCase):
         self.assertEqual(response.status_code, 200)
         response.render()
         self.assertEqual(json.loads(response.content)["note"], "Note Note Note")
+
 
 class AppointmentNoteViewsDeleteTest(TestCase):
     def setUp(self):
