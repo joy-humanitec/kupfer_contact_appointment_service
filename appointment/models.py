@@ -59,7 +59,7 @@ class Appointment(models.Model):
 
 
 class AppointmentNote(models.Model):
-    note = models.TextField()
+    note = models.TextField(blank=True)
     type = models.PositiveSmallIntegerField(choices=NOTE_TYPES, default=1, help_text='Choices: {}'.format(", ".join([str(kv[0]) for kv in NOTE_TYPES])))
 
     def __str__(self):
