@@ -1033,43 +1033,33 @@ class AppointmentUpdateViewsTest(TestCase):
         self.assertEqual(appointment.invitee_uuids, invitee_uuids)
         self.assertEqual(appointment.siteprofile_uuid, siteprofile_uuid)
 
-    def test_create_appointment_and_remove_notes(self):
-        wflvl2_uuid = uuid.uuid4()
-        start_date = datetime(2018, 1, 1, 12, 15)\
-            .strftime("%Y-%m-%dT%H:%M:%S+01:00")
-        end_date = datetime(2018, 1, 1, 12, 30)\
-            .strftime("%Y-%m-%dT%H:%M:%S+01:00")
+    def test_update_appointment_and_keep_unupdated_notes(self):
+        appointment_notes_1 = mfactories.AppointmentNote(type=1, note="Keep note test", id=1)
+        appointment_notes_2 = mfactories.AppointmentNote(type=2, note="Update note test", id=2)
+        appointment = mfactories.Appointment(
+            owner=self.core_user_uuid,
+            organization_uuid=self.organization_uuid,
+            notes=[],
+        )
+        appointment.notes.add(appointment_notes_1, appointment_notes_2)
+        self.assertEqual(appointment.notes.all()[0].note, "Keep note test")
+        self.assertEqual(appointment.notes.all()[1].note, "Update note test")
+        self.assertEqual(AppointmentNote.objects.count(), 2)
+
         data = {
-            'name': 'Max Mustermann',
-            'start_date': start_date,
-            'end_date': end_date,
-            'address': 'Teststreet 123',
-            'type': ['Test Type'],
-            'notes': [{"note": "Please help me, youre my only hope",
-                       "type": 1}],
-            'workflowlevel2_uuids': [wflvl2_uuid],
+            'notes': [{"type": 2, "note": "New note 2"}],
         }
-        request = self.factory.post('', data, format='json')
-        request.user = self.user
-        request.session = self.session
-        view = AppointmentViewSet.as_view({'post': 'create'})
-        response = view(request)
-        self.assertEqual(response.status_code, 201)
-        appointment = Appointment.objects.get(id=response.data['id'])
-        self.assertEqual(appointment.notes.get().note,
-                         data['notes'][0]['note'])
-        self.assertEqual(AppointmentNote.objects.count(), 1)
-        # remove notes
-        data.update({'notes': []})
+        # update note 2
         request = self.factory.patch(appointment.uuid, data, format='json')
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'patch': 'update'})
         response = view(request, uuid=appointment.uuid).render()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.content)['notes'], [])
-        self.assertEqual(list(appointment.notes.all()), [])
-        self.assertEqual(AppointmentNote.objects.count(), 0)
+        self.assertEqual(json.loads(response.content)['notes'],
+                         [{"id": 1, "note": "Keep note test", "type": 1},
+                          {"id": 2, "note": "New note 2", "type": 2}])
+        self.assertEqual(AppointmentNote.objects.count(), 2)
 
     def test_update_appointment_without_notes(self):
         appointment = mfactories.Appointment(
