@@ -39,7 +39,6 @@ pipeline:
     file: Dockerfile
     when:
       event: [tag]
-      branch: [master]
       status: [success]
 
   prebuild-docker-static-image:
