@@ -394,7 +394,7 @@ class AppointmentListViewsTest(TestCase):
     def test_paginate_large_result_sets_max_size(self):
         contact_uuid = str(uuid.uuid4())
 
-        for i in range(0, 102):
+        for i in range(0, 2002):
             wflvl2_uuid = uuid.uuid4()
             mfactories.Appointment(
                 name='John Tester',
@@ -403,14 +403,15 @@ class AppointmentListViewsTest(TestCase):
                 workflowlevel2_uuids=[wflvl2_uuid]
             )
 
-        request = self.factory.get('?paginate=true&page_size=100')
+        request = self.factory.get('?paginate=true&page_size=2002')
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'list'})
         response = view(request)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 100)
+        # check if max_page_size is not exceeded
+        self.assertEqual(len(response.data['results']), 2000)
         self.assertIsNotNone(response.data['next'])
         self.assertIsNone(response.data['previous'])
 
