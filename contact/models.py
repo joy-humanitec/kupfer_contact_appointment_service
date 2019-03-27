@@ -7,18 +7,11 @@ from .validators import validate_emails, validate_phones, validate_addresses
 
 
 TITLE_CHOICES = (
-    ('prof dr', 'Prof. Dr.'),
-    ('dr prof', 'Dr. Prof.'),
-    ('prof', 'Prof.'),
-    ('frau dr', 'Frau Dr.'),
-    ('herr dr', 'Herr Dr.'),
-    ('dr', 'Dr.'),
-    ('frau', 'Frau'),
-    ('herr', 'Herr'),
     ('mr', 'Mr.'),
     ('ms', 'Ms.'),
     ('mrs', 'Mrs.'),
     ('miss', 'Miss'),
+    ('family', 'Family'),
 )
 
 CONTACT_TYPE_CHOICES = (
@@ -66,6 +59,7 @@ class Contact(models.Model):
         max_length=16, choices=TITLE_CHOICES, blank=True, null=True,
         help_text='Choices: {}'.format(
             ", ".join([kv[0] for kv in TITLE_CHOICES])))
+    suffix = models.CharField(max_length=50, blank=True, help_text='Suffix for titles like dr., prof., dr. med. etc.')
     contact_type = models.CharField(
         max_length=30, choices=CONTACT_TYPE_CHOICES, blank=True, null=True,
         help_text='Choices: {}'.format(

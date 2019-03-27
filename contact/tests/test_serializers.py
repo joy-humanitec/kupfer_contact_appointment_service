@@ -35,6 +35,7 @@ class ContactSerializerTest(TestCase):
             'workflowlevel2_uuids',
             'title',
             'title_display',
+            'suffix',
             'url',
             'phones',
             'company',
@@ -48,12 +49,12 @@ class ContactSerializerTest(TestCase):
         self.assertEqual(set(data.keys()), set(keys))
 
     def test_title_display_field(self):
-        contact = mfactories.Contact(title='dr prof')
+        contact = mfactories.Contact(title='mr')
         request = self.factory.get('/')
         serializer_context = {'request': Request(request)}
         serializer = ContactSerializer(instance=contact,
                                        context=serializer_context)
-        self.assertEqual(serializer['title_display'].value, "Dr. Prof.")
+        self.assertEqual(serializer['title_display'].value, "Mr.")
 
 
 class ContactNameSerializerTest(TestCase):
