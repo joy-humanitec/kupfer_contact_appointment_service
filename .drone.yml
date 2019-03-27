@@ -26,19 +26,15 @@ pipeline:
 
   build-docker-image-tag:
     image: plugins/docker
-    registry:
-      from_secret: DOCKER_REGISTRY
-    repo:
-      from_secret: DOCKER_REPO
-    username:
-      from_secret: DOCKER_USERNAME
-    password:
-      from_secret: DOCKER_PASSWORD
-    auto_tag: true
     insecure: true
+    registry: registry.tola.io
+    repo: registry.tola.io/humanitec-walhall/crm_service
     file: Dockerfile
+    auto_tag: true
+    secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
     when:
-      event: [tag]
+      event: [push, tag]
+      branch: [master]
       status: [success]
 
   prebuild-docker-static-image:
@@ -52,16 +48,11 @@ pipeline:
   build-docker-static-image-tag:
     image: plugins/docker
     insecure: true
-    registry:
-      from_secret: DOCKER_REGISTRY
-    repo:
-      from_secret: DOCKER_REPO_STATIC
+    registry: registry.tola.io
+    repo: registry.tola.io/humanitec/crm_service_static
     dockerfile: Dockerfile.nginx
     auto_tag: true
-    username:
-      from_secret: DOCKER_USERNAME
-    password:
-      from_secret: DOCKER_PASSWORD
+    secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
     when:
       event: [tag]
       status: [success]
@@ -103,4 +94,4 @@ pipeline:
       - DATABASE_PASSWORD=root
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
-      - SECRET_KEY=nothing 
+      - SECRET_KEY=nothing
