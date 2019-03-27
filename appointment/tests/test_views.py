@@ -40,13 +40,13 @@ class AppointmentListViewsTest(TestCase):
             [('next', None), ('previous', None), ('results', [])]))
 
     def test_list_appointments(self):
-        contact_uuid = str(uuid.uuid4())
+        contact = contact_mfactories.Contact()
         siteprofile_uuid = str(uuid.uuid4())
         wflvl2_uuid = uuid.uuid4()
         mfactories.Appointment(
             name='John Tester',
             siteprofile_uuid=siteprofile_uuid,
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             organization_uuid=self.organization_uuid,
             workflowlevel2_uuids=[wflvl2_uuid]
         )
@@ -67,16 +67,16 @@ class AppointmentListViewsTest(TestCase):
                          [str(wflvl2_uuid)])
         self.assertEqual(appointment_data['siteprofile_uuid'],
                          str(siteprofile_uuid))
-        self.assertEqual(appointment_data['contact_uuid'], contact_uuid)
+        self.assertEqual(appointment_data['contact_uuid'], str(contact.uuid))
 
     def test_list_appointments_other_user_same_org(self):
         user_other = uuid.uuid4()
-        contact_uuid = str(uuid.uuid4())
+        contact = contact_mfactories.Contact()
         wflvl2_uuid = uuid.uuid4()
         mfactories.Appointment(
             owner=user_other,
             name='John Tester',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             organization_uuid=self.organization_uuid,
             workflowlevel2_uuids=[wflvl2_uuid]
         )
@@ -93,11 +93,11 @@ class AppointmentListViewsTest(TestCase):
     def test_list_appointments_other_user_diff_org(self):
         user_other = uuid.uuid4()
 
-        contact_uuid = str(uuid.uuid4())
+        contact = contact_mfactories.Contact()
         mfactories.Appointment(
             owner=user_other,
             name='John Tester',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             organization_uuid=uuid.uuid4()
         )
 
@@ -112,15 +112,15 @@ class AppointmentListViewsTest(TestCase):
 
     def test_list_appointments_filter_by_contactuuid(self):
         mfactories.Appointment(name='Other appointment')
-        contact_uuid = str(uuid.uuid4())
+        contact = contact_mfactories.Contact()
         mfactories.Appointment(
             name='Appointment 0',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             organization_uuid=self.organization_uuid
         )
         mfactories.Appointment(
             name='Appointment 1',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             organization_uuid=self.organization_uuid
         )
         mfactories.Appointment(
@@ -129,7 +129,7 @@ class AppointmentListViewsTest(TestCase):
             organization_uuid=self.organization_uuid
         )
 
-        request = self.factory.get('?contact_uuid={}'.format(contact_uuid))
+        request = self.factory.get('?contact_uuid={}'.format(contact.uuid))
         request.user = self.user
         request.session = self.session
         view = AppointmentViewSet.as_view({'get': 'list'})
@@ -139,28 +139,28 @@ class AppointmentListViewsTest(TestCase):
         self.assertEqual(len(response.data['results']), 2)
 
         appointment_data = response.data['results'][0]
-        self.assertEqual(appointment_data['contact_uuid'], contact_uuid)
+        self.assertEqual(appointment_data['contact_uuid'], str(contact.uuid))
         self.assertEqual(response.data['results'][0]['name'], 'Appointment 0')
         self.assertEqual(response.data['results'][1]['name'], 'Appointment 1')
 
     def test_list_appointments_filter_by_owner_me(self):
         user_other = uuid.uuid4()
-        contact_uuid = str(uuid.uuid4())
+        contact = contact_mfactories.Contact()
         mfactories.Appointment(
             name='Appointment 0',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             owner=user_other,
             organization_uuid=self.organization_uuid
         )
         mfactories.Appointment(
             name='Appointment 1',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             owner=user_other,
             organization_uuid=self.organization_uuid
         )
         mfactories.Appointment(
             name='Appointment 2',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             owner=self.session['jwt_core_user_uuid'],
             organization_uuid=self.organization_uuid
         )
@@ -177,16 +177,16 @@ class AppointmentListViewsTest(TestCase):
 
     def test_list_appointments_filter_by_owner_other(self):
         user_other = uuid.uuid4()
-        contact_uuid = str(uuid.uuid4())
+        contact = contact_mfactories.Contact()
         mfactories.Appointment(
             name='Appointment 0',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             owner=self.core_user_uuid,
             organization_uuid=self.organization_uuid
         )
         mfactories.Appointment(
             name='Appointment 1',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             owner=user_other,
             organization_uuid=self.organization_uuid
         )
@@ -277,20 +277,20 @@ class AppointmentListViewsTest(TestCase):
             name='Other appointment',
             organization_uuid=self.organization_uuid,
         )
-        contact_uuid = str(uuid.uuid4())
+        contact = contact_mfactories.Contact()
         mfactories.Appointment(
             name='Appointment 0',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             organization_uuid=self.organization_uuid,
         )
         mfactories.Appointment(
             name='Appointment 1',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             organization_uuid=self.organization_uuid,
         )
         mfactories.Appointment(
             name='Appointment 2',
-            contact_uuid=contact_uuid,
+            contact_uuid=contact.uuid,
             organization_uuid=self.organization_uuid,
         )
 
@@ -304,7 +304,7 @@ class AppointmentListViewsTest(TestCase):
         self.assertEqual(len(response.data['results']), 4)
 
         appointment_data = response.data['results'][0]
-        self.assertEqual(appointment_data['contact_uuid'], contact_uuid)
+        self.assertEqual(appointment_data['contact_uuid'], str(contact.uuid))
         self.assertEqual(response.data['results'][0]['name'], 'Appointment 2')
         self.assertEqual(response.data['results'][1]['name'], 'Appointment 1')
         self.assertEqual(response.data['results'][2]['name'], 'Appointment 0')
@@ -356,13 +356,13 @@ class AppointmentListViewsTest(TestCase):
         self.assertIsNone(response.data['previous'])
 
     def test_paginate_large_result_sets(self):
-        contact_uuid = str(uuid.uuid4())
+        contact = contact_mfactories.Contact()
 
         for i in range(0, 32):
             wflvl2_uuid = uuid.uuid4()
             mfactories.Appointment(
                 name='John Tester',
-                contact_uuid=contact_uuid,
+                contact_uuid=contact.uuid,
                 organization_uuid=self.organization_uuid,
                 workflowlevel2_uuids=[wflvl2_uuid]
             )
@@ -392,13 +392,13 @@ class AppointmentListViewsTest(TestCase):
         self.assertIsNotNone(page2_response.data['previous'])
 
     def test_paginate_large_result_sets_max_size(self):
-        contact_uuid = str(uuid.uuid4())
+        contact = contact_mfactories.Contact()
 
         for i in range(0, 2002):
             wflvl2_uuid = uuid.uuid4()
             mfactories.Appointment(
                 name='John Tester',
-                contact_uuid=contact_uuid,
+                contact_uuid=contact.uuid,
                 organization_uuid=self.organization_uuid,
                 workflowlevel2_uuids=[wflvl2_uuid]
             )
