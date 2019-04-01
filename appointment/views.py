@@ -1,27 +1,16 @@
 import django_filters
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, filters, mixins
-from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 
+from crm.pagination import AppointmentCursorPagination
 from .filters import AppointmentFilter
 from .models import Appointment, AppointmentNotification, AppointmentNote
 from .permissions import (OrganizationPermission,
                           AppointmentNotificationPermission, AppointmentNoteOrganizationPermission)
 from .serializers import (AppointmentSerializer,
                           AppointmentNotificationSerializer, AppointmentNoteSerializer)
-
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-
-
-class DefaultCursorPagination(CursorPagination):
-    """
-    TODO move this to settings to provide better standardization
-    See http://www.django-rest-framework.org/api-guide/pagination/
-    """
-    page_size = 30
-    max_page_size = 2000
-    page_size_query_param = 'page_size'
 
 
 class AppointmentViewSet(viewsets.ModelViewSet):
@@ -66,7 +55,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     )
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
-    pagination_class = DefaultCursorPagination
+    pagination_class = AppointmentCursorPagination
     permission_classes = (OrganizationPermission,)
 
 
