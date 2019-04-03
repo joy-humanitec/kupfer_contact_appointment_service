@@ -30,7 +30,8 @@ class ContactViewSet(viewsets.ModelViewSet):
         return super(ContactViewSet, self).update(request, *args, **kwargs)
 
     ordering = ('first_name',)
-    filter_backends = (filters.OrderingFilter,)
+    filter_backends = (filters.OrderingFilter, filters.SearchFilter)
+    search_fields = ('^first_name', '^last_name')
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
     permission_classes = (ContactPermission,)
