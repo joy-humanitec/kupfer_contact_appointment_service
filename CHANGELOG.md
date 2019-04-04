@@ -2,6 +2,7 @@
 
 ## [v0.0.19] - 2019-03-04
 
+
 ### Added
 
 - Added a new field to `/contact`-endpoint: `Contact.title_display`
