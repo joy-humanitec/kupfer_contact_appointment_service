@@ -201,6 +201,38 @@ class ContactListViewsTest(TestCase):
         response = view(request_get)
         self.assertEqual(response.status_code, 403)
 
+    def test_search_startswith_case_insensitive(self):
+        mfactories.Contact.create(
+            first_name='David', last_name='Mueller',
+            organization_uuid=self.organization_uuid)
+        mfactories.Contact.create(
+            first_name='Pyö', last_name='Mueller',
+            organization_uuid=self.organization_uuid)
+        # test first_name
+        request = self.factory.get('?search=dA')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        # test last_name
+        request = self.factory.get('?search=mueller')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
+        # test not starts_with equals None
+        request = self.factory.get('?search=ueller')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 0)
+
 
 class ContactRetrieveViewsTest(TestCase):
     def setUp(self):
