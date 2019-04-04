@@ -1,4 +1,5 @@
 from rest_framework import viewsets, filters as drf_filters
+from django_filters import rest_framework as django_filters
 
 from crm.pagination import ContactLimitOffsetPagination
 from .models import Contact
@@ -33,7 +34,9 @@ class ContactViewSet(viewsets.ModelViewSet):
     ordering = ('first_name',)
     filter_backends = (drf_filters.OrderingFilter,
                        drf_filters.SearchFilter,
+                       django_filters.DjangoFilterBackend,
                        filters.StartsWithSearchFilter,)
+    filter_class = filters.ContactFilter
     search_fields = ('first_name', 'last_name')
     queryset = Contact.objects.all()
     serializer_class = ContactSerializer
