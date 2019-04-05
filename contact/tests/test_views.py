@@ -265,6 +265,50 @@ class ContactListViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
 
+    def test_several_workflowlevel2_uuids_filter(self):
+        wfl2_1, wfl2_2, wfl2_3 = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+        mfactories.Contact.create(
+            workflowlevel2_uuids=[wfl2_1, ],
+            organization_uuid=self.organization_uuid)
+        mfactories.Contact.create(
+            workflowlevel2_uuids=[wfl2_2, wfl2_1, ],
+            organization_uuid=self.organization_uuid)
+        mfactories.Contact.create(
+            workflowlevel2_uuids=[wfl2_2, wfl2_3, ],
+            organization_uuid=self.organization_uuid)
+        mfactories.Contact.create(
+            workflowlevel2_uuids=[uuid.uuid4(), ],
+            organization_uuid=self.organization_uuid)
+        request = self.factory.get(f'?workflowlevel2_uuids={wfl2_1},{wfl2_2}')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 3)
+
+    def test_several_siteprofile_uuids_filter(self):
+        wfl2_1, wfl2_2, wfl2_3 = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+        mfactories.Contact.create(
+            siteprofile_uuids=[wfl2_1, ],
+            organization_uuid=self.organization_uuid)
+        mfactories.Contact.create(
+            siteprofile_uuids=[wfl2_2, wfl2_1, ],
+            organization_uuid=self.organization_uuid)
+        mfactories.Contact.create(
+            siteprofile_uuids=[wfl2_2, wfl2_3, ],
+            organization_uuid=self.organization_uuid)
+        mfactories.Contact.create(
+            siteprofile_uuids=[uuid.uuid4(), ],
+            organization_uuid=self.organization_uuid)
+        request = self.factory.get(f'?siteprofile_uuids={wfl2_1},{wfl2_2}')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 3)
+
 
 class ContactRetrieveViewsTest(TestCase):
     def setUp(self):
