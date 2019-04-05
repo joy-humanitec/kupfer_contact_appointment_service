@@ -209,7 +209,7 @@ class ContactListViewsTest(TestCase):
             first_name='Pyö', last_name='Mueller',
             organization_uuid=self.organization_uuid)
         # test first_name
-        request = self.factory.get('?search=dA')
+        request = self.factory.get('?starts_with=dA')
         request.user = self.user
         request.session = self.session
         view = ContactViewSet.as_view({'get': 'list'})
@@ -217,7 +217,7 @@ class ContactListViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         # test last_name
-        request = self.factory.get('?search=mueller')
+        request = self.factory.get('?starts_with=mueller')
         request.user = self.user
         request.session = self.session
         view = ContactViewSet.as_view({'get': 'list'})
@@ -225,7 +225,39 @@ class ContactListViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         # test not starts_with equals None
-        request = self.factory.get('?search=ueller')
+        request = self.factory.get('?starts_with=ueller')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 0)
+
+    def test_search_everywhere_case_insensitive(self):
+        mfactories.Contact.create(
+            first_name='David', last_name='Mueller',
+            organization_uuid=self.organization_uuid)
+        mfactories.Contact.create(
+            first_name='Pyö', last_name='Mueller',
+            organization_uuid=self.organization_uuid)
+        # test first_name
+        request = self.factory.get('?search=Avi')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        # test last_name
+        request = self.factory.get('?search=ELLER')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'get': 'list'})
+        response = view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
+        # test not search equals None
+        request = self.factory.get('?search=Rueller')
         request.user = self.user
         request.session = self.session
         view = ContactViewSet.as_view({'get': 'list'})
