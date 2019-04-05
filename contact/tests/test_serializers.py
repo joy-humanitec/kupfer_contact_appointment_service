@@ -1,4 +1,6 @@
+import uuid
 from django.test import TestCase
+from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 from rest_framework.request import Request
 
@@ -44,7 +46,8 @@ class ContactSerializerTest(TestCase):
             'customer_type',
             'notes',
             'workflowlevel1_uuids',
-            'emails'
+            'emails',
+            'customer_id',
         ]
         self.assertEqual(set(data.keys()), set(keys))
 
@@ -55,6 +58,26 @@ class ContactSerializerTest(TestCase):
         serializer = ContactSerializer(instance=contact,
                                        context=serializer_context)
         self.assertEqual(serializer['title_display'].value, "Mr.")
+
+    def test_unique_customer_id_validate(self):
+        organization_uuid = uuid.uuid4()
+        mfactories.Contact(organization_uuid=organization_uuid, customer_id="abc")
+        data = {'organization_uuid': organization_uuid,
+                'customer_id': "abcd",
+                'workflowlevel1_uuids': [str(uuid.uuid4()), ]}
+        request = self.factory.get('/')
+        request.user = mfactories.User()
+        request.session = {
+            'jwt_organization_uuid': organization_uuid,
+        }
+        serializer_context = {'request': Request(request)}
+        serializer = ContactSerializer(data=data, context=serializer_context)
+        self.assertTrue(serializer.is_valid(raise_exception=True))
+        data['customer_id'] = "abc"
+        serializer = ContactSerializer(data=data, context=serializer_context)
+        self.assertFalse(serializer.is_valid())
+        with self.assertRaisesMessage(ValidationError, expected_message='customer_id is not unique in organization'):
+            serializer.is_valid(raise_exception=True)
 
 
 class ContactNameSerializerTest(TestCase):
