@@ -322,7 +322,7 @@ class Command(BaseCommand):
         response = requests.get(url_get_products,
                                 params={'workflowlevel2_uuid': wfl2_uuid},
                                 headers=self.headers)
-        content = json.loads(response.content)
+        content = json.loads(response.content)['results']
         for product in content:
             if product['name'] == product_name:
                 return product['uuid']
