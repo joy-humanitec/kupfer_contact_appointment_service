@@ -69,10 +69,17 @@ def _split_full_name(full_name):
 
 
 def _get_title_from_display(title_display):
-    title_displays = [y[1] for y in TITLE_CHOICES]
+    german_title_choices = TITLE_CHOICES + (
+        ('mr', 'herr'),
+        ('mrs', 'frau'),
+        ('family', 'familie'),
+        ('family', 'eheleute'),
+    )
+    title_display = title_display.lower()
+    title_displays = [y[1] for y in german_title_choices]
     if title_display in title_displays:
         title_index = title_displays.index(title_display)
-        return TITLE_CHOICES[title_index][0]
+        return german_title_choices[title_index][0]
     return None
 
 
