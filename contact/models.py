@@ -53,6 +53,7 @@ EMAIL_TYPE_CHOICES = (
 class Contact(models.Model):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     core_user_uuid = models.UUIDField(blank=True, null=True)
+    customer_id = models.CharField(max_length=32, blank=True, null=True, help_text='ID set by the customer. Must be unique in organization.')
     first_name = models.CharField(max_length=50, blank=True, help_text='First name', db_index=True)
     middle_name = models.CharField(max_length=50, blank=True, help_text='Middle name (not common in Germany)')
     last_name = models.CharField(max_length=50, blank=True, help_text='Surname or family name')
