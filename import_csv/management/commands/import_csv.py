@@ -69,10 +69,17 @@ def _split_full_name(full_name):
 
 
 def _get_title_from_display(title_display):
-    title_displays = [y[1] for y in TITLE_CHOICES]
+    german_title_choices = TITLE_CHOICES + (
+        ('mr', 'herr'),
+        ('mrs', 'frau'),
+        ('family', 'familie'),
+        ('family', 'eheleute'),
+    )
+    title_display = title_display.lower()
+    title_displays = [y[1] for y in german_title_choices]
     if title_display in title_displays:
         title_index = title_displays.index(title_display)
-        return TITLE_CHOICES[title_index][0]
+        return german_title_choices[title_index][0]
     return None
 
 
@@ -133,7 +140,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'file', default=None, nargs='?',
+            '--file', default=None, nargs='?',
             help='Path of file to import.',
         )
 
@@ -236,6 +243,8 @@ class Command(BaseCommand):
             contact.title = title
         else:
             contact.title = _get_title_from_display(self._row('Q'))
+        contact.suffix = self._row('D')
+        contact.customer_id = self._row('B')
         contact.first_name = first_name
         contact.last_name = last_name
         contact.phones = phones
@@ -313,7 +322,7 @@ class Command(BaseCommand):
         response = requests.get(url_get_products,
                                 params={'workflowlevel2_uuid': wfl2_uuid},
                                 headers=self.headers)
-        content = json.loads(response.content)
+        content = json.loads(response.content)['results']
         for product in content:
             if product['name'] == product_name:
                 return product['uuid']
@@ -370,7 +379,6 @@ class Command(BaseCommand):
 
         with open(csv_path, 'rt') as csvfile:
             next(csvfile)  # skip first line
-            next(csvfile)  # skip also second line (descriptions)
             for row in csv.reader(csvfile, delimiter=str(";"), dialect=csv.excel_tab):
                 self.row = row
                 if not self._row('A'):
@@ -383,7 +391,7 @@ class Command(BaseCommand):
         print(f"{self.counter} contacts parsed.")
 
     def handle(self, *args, **options):
-        file = getattr(options, 'file', DEFAULT_FILE_NAME)
+        file = options.get('file', DEFAULT_FILE_NAME)
         csv_path = os.path.join(settings.BASE_DIR, '..', 'data', 'crm_service', file)
         print(f"Import data from {file}.")
         self.parse_file(csv_path)
