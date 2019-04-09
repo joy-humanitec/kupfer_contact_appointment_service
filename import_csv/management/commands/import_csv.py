@@ -243,6 +243,8 @@ class Command(BaseCommand):
             contact.title = title
         else:
             contact.title = _get_title_from_display(self._row('Q'))
+        contact.suffix = self._row('D')
+        contact.customer_id = self._row('B')
         contact.first_name = first_name
         contact.last_name = last_name
         contact.phones = phones
