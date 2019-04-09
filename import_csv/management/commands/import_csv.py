@@ -140,7 +140,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'file', default=None, nargs='?',
+            '--file', default=None, nargs='?',
             help='Path of file to import.',
         )
 
@@ -391,7 +391,7 @@ class Command(BaseCommand):
         print(f"{self.counter} contacts parsed.")
 
     def handle(self, *args, **options):
-        file = getattr(options, 'file', DEFAULT_FILE_NAME)
+        file = options.get('file', DEFAULT_FILE_NAME)
         csv_path = os.path.join(settings.BASE_DIR, '..', 'data', 'crm_service', file)
         print(f"Import data from {file}.")
         self.parse_file(csv_path)
