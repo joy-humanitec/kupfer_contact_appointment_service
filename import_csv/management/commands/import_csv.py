@@ -379,7 +379,6 @@ class Command(BaseCommand):
 
         with open(csv_path, 'rt') as csvfile:
             next(csvfile)  # skip first line
-            next(csvfile)  # skip also second line (descriptions)
             for row in csv.reader(csvfile, delimiter=str(";"), dialect=csv.excel_tab):
                 self.row = row
                 if not self._row('A'):
