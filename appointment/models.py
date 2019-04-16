@@ -8,6 +8,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import validate_email
 
+from contact.models import Contact
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +43,12 @@ class Appointment(models.Model):
         models.UUIDField(), blank=True, null=True,
         help_text='List of WorkflowLevel2s added to the appointment.')
     contact_uuid = models.UUIDField(blank=True, null=True)
+
+    @property
+    def contact(self):
+        if not hasattr(self, '_contact'):
+            self._contact = Contact.objects.filter(uuid=self.contact_uuid).first()
+        return self._contact
 
     def clean(self):
         super(Appointment, self).clean()

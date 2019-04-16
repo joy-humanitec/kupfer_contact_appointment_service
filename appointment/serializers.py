@@ -2,25 +2,10 @@ import logging
 
 from rest_framework import serializers
 
-from contact.models import Contact
 from contact.serializers import ContactNameSerializer
 from .models import Appointment, AppointmentNotification, AppointmentNote
 
 logger = logging.getLogger(__name__)
-
-
-class ContactNameField(serializers.ReadOnlyField):
-    def get_attribute(self, obj):
-        if obj.contact_uuid:
-            try:
-                contact = Contact.objects.get(uuid=obj.contact_uuid)
-            except Contact.DoesNotExist:
-                logger.warning('Missing database record. Appointment has a '
-                               'reference to a non existing Contact. UUID: {}'.
-                               format(obj.contact_uuid))
-            else:
-                contact_serizalizer = ContactNameSerializer(contact)
-                return contact_serizalizer.data
 
 
 class AppointmentNoteSerializer(serializers.ModelSerializer):
@@ -31,7 +16,7 @@ class AppointmentNoteSerializer(serializers.ModelSerializer):
 
 class AppointmentSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
-    contact = ContactNameField()
+    contact = ContactNameSerializer(read_only=True)
     notes = AppointmentNoteSerializer(many=True, required=False)
 
     def create(self, validated_data):

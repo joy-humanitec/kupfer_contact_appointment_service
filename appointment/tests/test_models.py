@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.core import mail
 import pytz
 
+from contact.models import Contact
 from ..models import Appointment, AppointmentNotification, AppointmentNote
 from . import model_factories as mfactories
 
@@ -158,6 +159,34 @@ class AppointmentTest(TestCase):
 
         self.assertEqual(str(appointment),
                          'Appointment1 2018-01-01 12:15:00+00:00')
+
+    def test_contact_property_not_exist(self):
+        appointment = Appointment.objects.create(
+            owner=self.user_uuid,
+            name="Appointment1",
+            start_date=datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
+            end_date=datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
+            type=["Test Type"],
+            contact_uuid=str(uuid.uuid4())
+        )
+        self.assertIsNone(appointment.contact)
+
+    def test_contact_property(self):
+        contact = Contact.objects.create(
+            core_user_uuid=self.user_uuid,
+            last_name='Misty',
+            uuid=uuid.uuid4(),
+            workflowlevel1_uuids=[str(uuid.uuid4)],
+        )
+        appointment = Appointment.objects.create(
+            owner=self.user_uuid,
+            name="Appointment1",
+            start_date=datetime(2018, 1, 1, 12, 15, tzinfo=pytz.UTC),
+            end_date=datetime(2018, 1, 1, 12, 30, tzinfo=pytz.UTC),
+            type=["Test Type"],
+            contact_uuid=str(contact.uuid)
+        )
+        self.assertEqual(contact, appointment.contact)
 
 
 class AppointmentNotificationsTest(TestCase):
