@@ -22,8 +22,7 @@ class ContactSerializer(serializers.HyperlinkedModelSerializer):
 
 class ContactNameSerializer(serializers.ModelSerializer):
     uuid = serializers.ReadOnlyField()
-    title_display = serializers.CharField(source='get_title_display', read_only=True)
 
     class Meta:
         model = Contact
-        fields = ('uuid', 'first_name', 'middle_name', 'last_name', 'title_display')
+        fields = ('uuid', 'first_name', 'middle_name', 'last_name', 'title', 'id')

@@ -96,7 +96,8 @@ class ContactNameSerializerTest(TestCase):
             'first_name',
             'middle_name',
             'last_name',
-            'title_display'
+            'title',
+            'id',
         ]
 
         self.assertEqual(set(data.keys()), set(keys))
