@@ -227,11 +227,10 @@ class Command(BaseCommand):
         full_name = self._row('E')
         title, first_name, last_name = _split_full_name(full_name)
         office_phones = _combine_field_rows_by_type('office', 'number',
-                                                    self._row('K'), self._row('BE'),
-                                                    self._row('BF'), self._row('BI'))
+                                                    self._row('BE'), self._row('BF'), self._row('BI'))
         home_phones = _combine_field_rows_by_type('home', 'number',
-                                                  self._row('AK'), self._row('CE'),
-                                                  self._row('CF'))
+                                                  self._row('K'),
+                                                  self._row('AK'), self._row('CE'), self._row('CF'))
         mobile_phones = _combine_field_rows_by_type('mobile', 'number',
                                                     self._row('M'))
         fax_phones = _combine_field_rows_by_type('fax', 'number',
