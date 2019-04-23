@@ -230,11 +230,13 @@ class Command(BaseCommand):
                                                     self._row('K'), self._row('BE'),
                                                     self._row('BF'), self._row('BI'))
         home_phones = _combine_field_rows_by_type('home', 'number',
-                                                  self._row('M'), self._row('AK'),
-                                                  self._row('CE'), self._row('CF'))
+                                                  self._row('AK'), self._row('CE'),
+                                                  self._row('CF'))
+        mobile_phones = _combine_field_rows_by_type('mobile', 'number',
+                                                    self._row('M'))
         fax_phones = _combine_field_rows_by_type('fax', 'number',
                                                  self._row('L'), self._row('CG'))
-        phones = office_phones + home_phones + fax_phones
+        phones = office_phones + home_phones + fax_phones + mobile_phones
         emails = _combine_field_rows_by_type('office', 'email',
                                              self._row('AO'), self._row('BD'))
         # set and save attributes
