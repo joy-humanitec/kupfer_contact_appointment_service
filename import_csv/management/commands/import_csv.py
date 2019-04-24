@@ -227,14 +227,15 @@ class Command(BaseCommand):
         full_name = self._row('E')
         title, first_name, last_name = _split_full_name(full_name)
         office_phones = _combine_field_rows_by_type('office', 'number',
-                                                    self._row('K'), self._row('BE'),
-                                                    self._row('BF'), self._row('BI'))
+                                                    self._row('BE'), self._row('BF'), self._row('BI'))
         home_phones = _combine_field_rows_by_type('home', 'number',
-                                                  self._row('M'), self._row('AK'),
-                                                  self._row('CE'), self._row('CF'))
+                                                  self._row('K'),
+                                                  self._row('AK'), self._row('CE'), self._row('CF'))
+        mobile_phones = _combine_field_rows_by_type('mobile', 'number',
+                                                    self._row('M'))
         fax_phones = _combine_field_rows_by_type('fax', 'number',
                                                  self._row('L'), self._row('CG'))
-        phones = office_phones + home_phones + fax_phones
+        phones = office_phones + home_phones + fax_phones + mobile_phones
         emails = _combine_field_rows_by_type('office', 'email',
                                              self._row('AO'), self._row('BD'))
         # set and save attributes
