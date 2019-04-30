@@ -344,9 +344,9 @@ class Command(BaseCommand):
         url_update_product = URL_BIFROST + f'products/products/{product_uuid}'
         response = requests.patch(url_update_product, headers=self.headers, data=json.dumps(product_data))
         if response.status_code == 200:
-            print(f"Product with uuid=product_uuid updated.")
+            print(f"Product with uuid={product_uuid} updated.")
         else:
-            print(f"Error when updating Product with uuid=product_uuid.")
+            print(f"Error when updating Product with uuid={product_uuid}.")
             print(response.content)
 
     def _create_product(self, product_data):
