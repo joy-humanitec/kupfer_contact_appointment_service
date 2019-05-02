@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import string
+from uuid import UUID
 
 import requests
 from django.conf import settings
@@ -16,56 +17,77 @@ URL_BIFROST = ''
 USERNAME = ''
 PASSWORD = ''
 CLIENT_ID = ''
-# ORGANIZATION_UUID = 'fd383104-20fa-4156-93c0-fe75d10005ab'  # Ritz GmbH on production
-# workflowlevel1_uuid = '6a4c8b6e-f90b-4554-b092-9a3a77bc00de'  # WorkflowLevel1.objects.get(name='Ritz
-# GmbH').level1_uuid on production  # noqa
-ORGANIZATION_UUID = '460c0ed6-445b-4204-8a6e-442ebb8b97a9'  # Test Import Organization on dev
-WORKFLOWLEVEL1_UUID = '7f69cdd8-11ac-421e-88a2-a2f0334109a3'  # Test Import Wfl1 on dev
-WORKFLOWLEVEL1_ID = 15
 
 
-def _merge_fields(*args):
-    return ' '.join(filter(None, args)).strip()
-
-
-def _split_full_name(full_name):
-    """RULES for separating last name, first name:
-    - When a user writes one word - it is assigned as the last name
-    - When a user writes two words - it is assigned as first name and last name
-    - When a user writes more than two words - all the words BUT the last one are assigned to the “First Name”, and
-      only the last one is assigned to the “Last Name”. Except from the following:
-    ---- When a user writes Last name, First name (with a comma after the first word),
-         the word with comma is treated as last name
-    ---- When a user writes “-” between two words - it is treated as the last name .
-    """
-    title = None
-    full_name = full_name.strip()
-    if any(char.isdigit() for char in full_name):
-        first_name, last_name = '', full_name
-    elif full_name.count('-') > 0:
-        if ' ' in full_name:
-            first_name, last_name = full_name.rsplit(' ', 1)
-        else:
-            first_name, last_name = '', full_name
-    elif full_name.count(',') == 1:
-        last_name, first_name = full_name.split(',')
-    elif full_name.count(',') > 1:
-        raise NotImplementedError(f'Unhandled name: {full_name}')
-    elif full_name.count(' ') == 0:
-        first_name, last_name = '', full_name
-    elif full_name.count(' ') == 1:
-        first_name, last_name = full_name.split(' ')
-    elif full_name.count(' ') > 1:
-        first_name, last_name = full_name.rsplit(' ', 1)
-    # check if title in first_name
-    title_displays = [y[1] for y in TITLE_CHOICES]
-    for title_display in title_displays:
-        if title_display in first_name:
-            first_name = first_name.replace(title_display, '')
-            title_index = title_displays.index(title_display)
-            title = TITLE_CHOICES[title_index][0]
-            break
-    return title, first_name.strip(), last_name.strip()
+PRODUCT_FIELD_MAPPINGS = [
+    # product1
+    {
+        "fields": {
+            "name": 'AB',
+            "make": 'AE',
+            "part_number": 'AF',
+            "reference_id": 'AG',
+            "installation_date": 'AH',
+            "notes": 'AI'
+        }
+    },
+    # product2
+    {
+        "fields": {
+            "name": 'AJ',
+            "make": 'AM',
+            "part_number": 'AN',
+            "reference_id": 'AO',
+            "installation_date": 'AP',
+            "notes": 'AQ'
+        }
+    },
+    # product3
+    {
+        "fields": {
+            "name": 'AR',
+            "part_number": 'AV',
+            "make": 'AU',
+            "reference_id": 'AW',
+            "installation_date": 'AX',
+            "notes": 'AY'
+        }
+    },
+    # product4
+    {
+        "fields": {
+            "name": 'AZ',
+            "part_number": 'BD',
+            "make": 'BC',
+            "reference_id": 'BE',
+            "installation_date": 'BF',
+            "notes": 'BG'
+        }
+    },
+    # product5
+    {
+        "fields": {
+            "name": 'BH',
+            "part_number": 'BL',
+            "make": 'BK',
+            "reference_id": 'BM',
+            "installation_date": 'BN',
+            "notes": 'BO'
+        }
+    },
+    # product6
+    {
+        "fields": {
+            "name": 'BP',
+            "part_number": 'BT',
+            "make": 'BS',
+            "reference_id": 'BU',
+            "installation_date": 'BV',
+            "notes": 'BW'
+        }
+    },
+]
+# TODO: import contacts and SiteProfiles also by mappings
 
 
 def _get_title_from_display(title_display):
@@ -83,7 +105,19 @@ def _get_title_from_display(title_display):
     return None
 
 
-def _combine_field_rows_by_type(_type, field_name, *row_fields):
+def _get_date_from_value(value):
+    """Check for date in value."""
+    if any(char.isdigit() for char in value) and len(value) == 4:
+        value = f"01.01.{value}"
+    date_format = '%d.%m.%Y'
+    try:
+        value = datetime.datetime.strptime(value, date_format)
+    except ValueError:
+        return None
+    return str(value)
+
+
+def _combine_field_cols_by_type(_type, field_name, *row_fields):
     field_value = []
     for row in row_fields:
         if row:
@@ -109,6 +143,33 @@ def _get_authorization_headers():
     return headers
 
 
+def is_valid_uuid(uuid_to_test, version=4):
+    """
+    Check if uuid_to_test is a valid UUID.
+
+    Parameters
+    ----------
+    uuid_to_test : str
+    version : {1, 2, 3, 4}
+
+    Returns
+    -------
+    `True` if uuid_to_test is a valid UUID, otherwise `False`.
+
+    Examples
+    --------
+    >>> is_valid_uuid('c9bf9e57-1685-4c89-bafb-ff5af830be8a')
+    True
+    >>> is_valid_uuid('c9bf9e58')
+    False
+    """
+    try:
+        UUID(uuid_to_test, version=version)
+    except ValueError:
+        return False
+    return True
+
+
 class Command(BaseCommand):
     help = """
     Import CSV from a file.
@@ -119,11 +180,54 @@ class Command(BaseCommand):
     cache_profile_type_ids = {}
     row = []
     counter = 0
+    contact_uuid = None
+
+    organization_uuid = None
+    workflowlevel1_uuid = None
+    workflowlevel1_id = None
+
+    def add_arguments(self, parser):
+        """Add --file argument to Command."""
+        parser.add_argument(
+            '--file', default=None, nargs='?', help='Path of file to import.',
+        )
 
     def __init__(self):
         """
-        Build row mapping for easier access to rows by letter-index instead
-        of number-index."""
+        Set general variables.
+        """
+        super().__init__()
+        self.build_row_mapping()
+
+        self.headers = _get_authorization_headers()
+        self.set_organization()
+        self.set_workflowlevel1()
+
+    def set_organization(self):
+        """Set organization_uuid."""
+        url_get_organization_uuid = URL_BIFROST + 'coreuser/'
+        response = requests.get(url_get_organization_uuid,
+                                params={'username': USERNAME},
+                                headers=self.headers,
+                                timeout=TIMEOUT_SECONDS)
+        content = json.loads(response.content)[0]
+        self.organization_uuid = content['organization']['organization_uuid']
+        print(f"ORGANIZATION_UUID: {self.organization_uuid}")
+
+    def set_workflowlevel1(self):
+        """Set workflowlevel1_id and workflowlevel1_uuid."""
+        url_get_organization_uuid = URL_BIFROST + 'workflowlevel1/'
+        response = requests.get(url_get_organization_uuid,
+                                headers=self.headers,
+                                timeout=TIMEOUT_SECONDS)
+        content = json.loads(response.content)[0]
+        self.workflowlevel1_id = content['id']
+        self.workflowlevel1_uuid = content['level1_uuid']
+        print(f"WORKFLOWLEVEL1_ID: {self.workflowlevel1_id}")
+        print(f"WORKFLOWLEVEL1_UUID: {self.workflowlevel1_uuid}")
+
+    def build_row_mapping(self):
+        """Build row mapping for easier access to rows by letter-index instead of number-index."""
         count = 0
         for l in string.ascii_uppercase:
             self.row_map.update({l: count})
@@ -132,28 +236,20 @@ class Command(BaseCommand):
             for j in string.ascii_uppercase:
                 self.row_map.update({i + j: count})
                 count += 1
-        # set headers
-        self.headers = _get_authorization_headers()
 
-    def _row(self, letter_index):
+    def _col(self, letter_index):
         return self.row[self.row_map[letter_index]]
-
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--file', default=None, nargs='?',
-            help='Path of file to import.',
-        )
 
     def _create_workflowlevel2(self):
         url_create_wfl2 = URL_BIFROST + 'workflowlevel2/'
         response = requests.post(url_create_wfl2,
                                  headers=self.headers,
                                  data=json.dumps({'name': 'FROM DATA IMPORT',
-                                                  'workflowlevel1': WORKFLOWLEVEL1_ID}))
+                                                  'workflowlevel1': self.workflowlevel1_id}))
         return json.loads(response.content)['level2_uuid']
 
     def _get_or_create_profile_type(self, profile_type):
-        """Get or create profile_type."""
+        """Get or create profile_type in location_service."""
         profile_type_id = None
         if profile_type in self.cache_profile_type_ids:  # first check cache
             profile_type_id = self.cache_profile_type_ids[profile_type]
@@ -195,61 +291,44 @@ class Command(BaseCommand):
                                     data=site_profile_data, timeout=TIMEOUT_SECONDS)
             if response.status_code != 200:
                 print(f'Error when updating SiteProfile: {site_profile_uuid} - status_code: {response.status_code}')
+            print(f'SiteProfile for object_with_billing {site_profile_uuid} updated.')
         else:
             url_create_site_profile = URL_BIFROST + f'location/siteprofiles/'
             response = requests.post(url_create_site_profile, headers=self.headers, data=site_profile_data)
             site_profile_uuid = json.loads(response.content)['uuid']
-
+            print(f'SiteProfile for object_with_billing {site_profile_uuid} created.')
         return site_profile_uuid
 
     def _import_contact(self):
-        """
-        - A - UUID
-        - D - Company, merge with S and F
-        - E: First Name, Last name
-        - K: phone number (note that it needs to be split into home and office addresses as separate phones and merged
-             with other fields)
-        Office phone: Merge K, BE, BF, BI,
-        Home phone: Merge M, AK, CE, CF
-        - L: Fax phone number, merge with CG
-        - AO: email, please merge with BD
-        """
         # get or create contact by uuid
-        contact_uuid = self._row('A')
+        self.contact_uuid = self._col('B')
         contact, created = Contact.objects.get_or_create(
-            uuid=contact_uuid,
-            defaults={'organization_uuid': ORGANIZATION_UUID,
-                      'workflowlevel1_uuids': [WORKFLOWLEVEL1_UUID, ]}
+            uuid=self.contact_uuid,
+            defaults={'organization_uuid': self.organization_uuid,
+                      'workflowlevel1_uuids': [self.workflowlevel1_uuid, ]}
         )
 
         # get attributes
-        company = _merge_fields(self._row('D'), self._row('S'), self._row('F'))
-        full_name = self._row('E')
-        title, first_name, last_name = _split_full_name(full_name)
-        office_phones = _combine_field_rows_by_type('office', 'number',
-                                                    self._row('BE'), self._row('BF'), self._row('BI'))
-        home_phones = _combine_field_rows_by_type('home', 'number',
-                                                  self._row('K'),
-                                                  self._row('AK'), self._row('CE'), self._row('CF'))
-        mobile_phones = _combine_field_rows_by_type('mobile', 'number',
-                                                    self._row('M'))
-        fax_phones = _combine_field_rows_by_type('fax', 'number',
-                                                 self._row('L'), self._row('CG'))
-        phones = office_phones + home_phones + fax_phones + mobile_phones
-        emails = _combine_field_rows_by_type('office', 'email',
-                                             self._row('AO'), self._row('BD'))
-        # set and save attributes
-        contact.company = company
-        if title:  # give title precedence to titles within the first_name
-            contact.title = title
-        else:
-            contact.title = _get_title_from_display(self._row('Q'))
-        contact.suffix = self._row('D')
-        contact.customer_id = self._row('B')
-        contact.first_name = first_name
-        contact.last_name = last_name
-        contact.phones = phones
-        contact.emails = emails
+        contact.customer_id = self._col('A')
+        # full_name = self._col('E')
+        contact.first_name = self._col('C')
+        contact.last_name = self._col('D')
+        contact.suffix = self._col('E')
+        contact.title = _get_title_from_display(self._col('F'))
+        contact.company = self._col('G')
+
+        # phones
+        home_phones = _combine_field_cols_by_type('home', 'number', self._col('H'))
+        fax_phones = _combine_field_cols_by_type('fax', 'number', self._col('I'))
+        mobile_phones = _combine_field_cols_by_type('mobile', 'number', self._col('J'))
+        # office_phones = _combine_field_cols_by_type('office', 'number', self._col('BE'))
+        contact.phones = home_phones + fax_phones + mobile_phones  # + office_phones
+
+        # emails
+        office_emails = _combine_field_cols_by_type('office', 'email', self._col('K'))
+        contact.emails = office_emails
+
+        contact.notes = self._col('L')
 
         # workflowlevel2_uuid
         if not contact.workflowlevel2_uuids:
@@ -258,63 +337,46 @@ class Command(BaseCommand):
         contact.save()
 
         if created:
-            print(f"{self.counter}: Contact with uuid={contact_uuid} created.")
+            print(f"{self.counter}: Contact with uuid={self.contact_uuid} created.")
         else:
-            print(f"{self.counter}: Contact with uuid={contact_uuid} updated.")
+            print(f"{self.counter}: Contact with uuid={self.contact_uuid} updated.")
 
         return contact.siteprofile_uuids, contact.workflowlevel2_uuids[0]
 
     def _import_siteprofile(self, site_profile_uuids, wfl2_uuid):
         """
-        If there is no data in BJ, BK, BL, then G, I, J are “object_with_billing”
-        If there is data in BJ, BK, BL, then it is saved as “object” and
-        G, I, J are saved as “billing”.
 
-        G - street & house number
-        I - post address
-        J - City
+        :param site_profile_uuids: For checking if the siteprofiles were already imported.
+        :param wfl2_uuid: For the relation to the products.
+        :return: The site_profile_uuid for setting it on the contact in case it was newly created.
 
-        site_profile_uuid in contact is the billing address (must also have a wfl2_uuid)
-        object address needs only wfl2_uuid
+        All imported siteprofiles are "object_with_billing".
 
-        site_profile_uuids[0] is per definition the billing-address
-        site_profile_uuids[1] is the object-address
+        name -> street & house number, postal code, city
+        address_line1 -> street & house number
+        postcode -> postal code
+        city -> City
+
         """
-        billing_address_data = {
-            'name': f"{self._row('G')}, {self._row('I')} {self._row('J')}",
-            'address_line1': self._row('G'),
-            'postcode': self._row('I'),
-            'city': self._row('J')
+        object_with_billing_address_data = {
+            'name': f"{self._col('M')}, {self._col('O')} {self._col('P')}",
+            'address_line1': self._col('M'),
+            'postcode': self._col('O'),
+            'city': self._col('P'),
+            'notes': self._col('Q'),
         }
-        billing_site_profile_uuid, object_site_profile_uuid = None, None
         if site_profile_uuids:
-            billing_site_profile_uuid = site_profile_uuids[0]
-            if len(site_profile_uuids) > 1:
-                object_site_profile_uuid = site_profile_uuids[1]
-        if (self._row('BJ'), self._row('BK'), self._row('BL')) == ('', '', ''):  # additional_address
-            billing_site_profile_uuid = self._save_site_profile('object_with_billing', billing_address_data, wfl2_uuid,
-                                                                billing_site_profile_uuid)
-            print(f'SiteProfile for object_with_billing {billing_site_profile_uuid}.')
-            return [billing_site_profile_uuid, ]
+            object_with_billing_site_profile_uuid = site_profile_uuids[0]
         else:
-            billing_site_profile_uuid = self._save_site_profile('billing', billing_address_data, wfl2_uuid,
-                                                                billing_site_profile_uuid)
-            object_address_data = {
-                # 'name': self._row('BJ'),  # import this later when we have a different structure
-                'name': f"{self._row('BK')}, {self._row('BL')} {self._row('BM')}",
-                'address_line1': self._row('BK'),
-                'postcode': self._row('BL'),
-                'city': self._row('BM'),
-            }
-            object_site_profile_uuid = self._save_site_profile('object', object_address_data, wfl2_uuid,
-                                                               object_site_profile_uuid)
-            print(f'SiteProfile for billing {billing_site_profile_uuid}, for object {object_site_profile_uuid}.')
-            return billing_site_profile_uuid, object_site_profile_uuid
+            object_with_billing_site_profile_uuid = None
+
+        object_with_billing_site_profile_uuid = self._save_site_profile(
+            'object_with_billing', object_with_billing_address_data, wfl2_uuid, object_with_billing_site_profile_uuid)
+        return [object_with_billing_site_profile_uuid, ]
 
     def _set_site_profile_uuid_on_contact(self, site_profile_uuids):
         """Get contact_uuid and set site_profile_uuids on contact."""
-        contact_uuid = self._row('A')
-        qs = Contact.objects.filter(uuid=contact_uuid)
+        qs = Contact.objects.filter(uuid=self.contact_uuid)
         qs.update(siteprofile_uuids=site_profile_uuids)
 
     def _check_product_existence(self, wfl2_uuid, product_name):
@@ -328,17 +390,6 @@ class Command(BaseCommand):
             if product['name'] == product_name:
                 return product['uuid']
         return None
-
-    def _get_date_from_row(self, value):
-        """Check for date in self._row('AD') (year, date, only first product)."""
-        if any(char.isdigit() for char in value) and len(value) == 4:
-            value = f"01.01.{value}"
-        date_format = '%d.%m.%Y'
-        try:
-            value = datetime.datetime.strptime(value, date_format)
-        except ValueError:
-            return None
-        return str(value)
 
     def _update_product(self, product_uuid, product_data):
         url_update_product = URL_BIFROST + f'products/products/{product_uuid}'
@@ -359,40 +410,59 @@ class Command(BaseCommand):
             print(response.content)
 
     def _import_product(self, wfl2_uuid):
-        product_names = (self._row('AE'), self._row('AF'), self._row('AG'),
-                         self._row('AH'), self._row('AI'), self._row('AJ'))
+        """
+        Field mappings look currently like this:
+        {
+            "fields": {
+                "name": 'AB',
+                "make": 'AE',
+                "part_number": 'AF',
+                "reference_id": 'AG',
+                "installation_date": 'AH',
+                "notes": 'AI'
+            }
+        },
+        """
         initial_product_data = {
             'workflowlevel2_uuid': wfl2_uuid,
         }
-        installation_date = self._get_date_from_row(self._row('AD'))
-        for i, product_name in enumerate(product_names):
-            if product_name:
-                product_uuid = self._check_product_existence(wfl2_uuid, product_name)
-                product_data = {'name': product_name, **initial_product_data}
-                if i == 0 and installation_date:
-                    product_data['installation_date'] = installation_date
-                if product_uuid:
-                    self._update_product(product_uuid, product_data)
-                else:
-                    self._create_product(product_data)
+        for mapping in PRODUCT_FIELD_MAPPINGS:
+            product_data = dict()
+            for key, value in mapping['fields'].items():
+                product_data = {**product_data, **{key: self._col(value)}}
+            product_data['installation_date'] = _get_date_from_value(product_data['installation_date'])
+            product_data = {**product_data, **initial_product_data}
+            product_name = product_data['name']
+            if not product_name:
+                continue
+            product_uuid = self._check_product_existence(wfl2_uuid, product_name)
+            if product_uuid:
+                self._update_product(product_uuid, product_data)
+            else:
+                self._create_product(product_data)
 
     def parse_file(self, csv_path):
-
-        with open(csv_path, 'rt') as csvfile:
-            next(csvfile)  # skip first line
-            for row in csv.reader(csvfile, delimiter=str(";"), dialect=csv.excel_tab):
+        with open(csv_path, 'rt') as csv_file:
+            next(csv_file)  # skip first line
+            for row in csv.reader(csv_file, delimiter=str(";"), dialect=csv.excel_tab):
                 self.row = row
-                if not self._row('A'):
+                if not is_valid_uuid(self._col('B')):
+                    print(f"{self._col('B')} DISMISSED")
                     continue
                 self.counter += 1
                 site_profile_uuids, wfl2_uuid = self._import_contact()
                 site_profile_uuids = self._import_siteprofile(site_profile_uuids, wfl2_uuid)
                 self._set_site_profile_uuid_on_contact(site_profile_uuids)
+                # TODO: SiteProfiles #2 and #3
+                # site_profile_uuids = self._import_siteprofile(mappings, site_profile_uuids, wfl2_uuid)
+                # self._set_site_profile_uuid_on_contact(site_profile_uuids)
                 self._import_product(wfl2_uuid)
         print(f"{self.counter} contacts parsed.")
 
     def handle(self, *args, **options):
-        file = options.get('file', DEFAULT_FILE_NAME)
+        file = options.get('file')
+        if not file:
+            file = DEFAULT_FILE_NAME
         csv_path = os.path.join(settings.BASE_DIR, '..', 'data', 'crm_service', file)
         print(f"Import data from {file}.")
         self.parse_file(csv_path)
