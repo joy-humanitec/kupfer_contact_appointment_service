@@ -116,6 +116,23 @@ class Contact(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    def get_default_customer_id(self):
+        """Figure out next free unique customer_id and return it."""
+        try:
+            latest_customer_id = self.__class__.objects.filter(
+                organization_uuid=self.organization_uuid).exclude(
+                customer_id=None).order_by('-customer_id').first().customer_id
+            next_customer_id = int(latest_customer_id) + 1
+        except AttributeError:
+            start_index = 10001
+            next_customer_id = start_index
+        return str(next_customer_id)
+
+    def save(self, **kwargs):
+        if not self.customer_id:
+            self.customer_id = self.get_default_customer_id()
+        super().save(**kwargs)
+
     class Meta:
         indexes = [
             GinIndex(fields=['workflowlevel1_uuids']),

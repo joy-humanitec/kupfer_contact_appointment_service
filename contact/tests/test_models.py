@@ -219,3 +219,21 @@ class ContactTest(TestCase):
             last_name='Mïsty',
         )
         self.assertEqual(str(contact), 'Jóhn Mïsty')
+
+    def test_set_customer_id_on_save(self):
+        contact = Contact(
+            core_user_uuid=self.core_user_uuid,
+            first_name='Jóhn',
+            last_name='Mïsty',
+            workflowlevel1_uuids=[str(uuid.uuid4)],
+        )
+        contact.save()
+        contact2 = Contact(
+            core_user_uuid=self.core_user_uuid,
+            first_name='Jóhn',
+            last_name='Mïsty',
+            workflowlevel1_uuids=[str(uuid.uuid4)],
+        )
+        contact2.save()
+        self.assertEqual(contact.customer_id, '10001')
+        self.assertEqual(contact2.customer_id, '10002')
