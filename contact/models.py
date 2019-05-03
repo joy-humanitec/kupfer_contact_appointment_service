@@ -3,6 +3,7 @@ import uuid
 from django.contrib.postgres.fields import ArrayField, HStoreField
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
+from django.utils import timezone
 
 from .validators import validate_emails, validate_phones, validate_addresses
 
@@ -109,6 +110,8 @@ class Contact(models.Model):
     workflowlevel2_uuids = ArrayField(models.CharField(max_length=36),
                                       blank=True, null=True,
                                       help_text='List of Workflowlevel2 UUIDs')
+    create_date = models.DateTimeField(default=timezone.now, editable=False)
+    edit_date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
