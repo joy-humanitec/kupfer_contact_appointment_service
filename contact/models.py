@@ -3,6 +3,7 @@ import uuid
 from django.contrib.postgres.fields import ArrayField, HStoreField
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
+from django.utils import timezone
 
 from .validators import validate_emails, validate_phones, validate_addresses
 
@@ -109,9 +110,28 @@ class Contact(models.Model):
     workflowlevel2_uuids = ArrayField(models.CharField(max_length=36),
                                       blank=True, null=True,
                                       help_text='List of Workflowlevel2 UUIDs')
+    create_date = models.DateTimeField(default=timezone.now, editable=False)
+    edit_date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    def get_default_customer_id(self):
+        """Figure out next free unique customer_id and return it."""
+        try:
+            latest_customer_id = self.__class__.objects.filter(
+                organization_uuid=self.organization_uuid).exclude(
+                customer_id=None).order_by('-customer_id').first().customer_id
+            next_customer_id = int(latest_customer_id) + 1
+        except AttributeError:
+            start_index = 10001
+            next_customer_id = start_index
+        return str(next_customer_id)
+
+    def save(self, **kwargs):
+        if not self.customer_id:
+            self.customer_id = self.get_default_customer_id()
+        super().save(**kwargs)
 
     class Meta:
         indexes = [

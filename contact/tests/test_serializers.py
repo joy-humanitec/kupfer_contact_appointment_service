@@ -48,6 +48,8 @@ class ContactSerializerTest(TestCase):
             'workflowlevel1_uuids',
             'emails',
             'customer_id',
+            'create_date',
+            'edit_date',
         ]
         self.assertEqual(set(data.keys()), set(keys))
 
