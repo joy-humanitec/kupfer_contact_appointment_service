@@ -1,6 +1,7 @@
 import uuid
 
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.test import TestCase
 
 from . import model_factories as mfactories
@@ -237,3 +238,15 @@ class ContactTest(TestCase):
         contact2.save()
         self.assertEqual(contact.customer_id, '10001')
         self.assertEqual(contact2.customer_id, '10002')
+
+    def test_unique_customer_id(self):
+        organization_uuid = str(uuid.uuid4())
+        Contact.objects.create(organization_uuid=organization_uuid,
+                               workflowlevel1_uuids=[str(uuid.uuid4)],
+                               customer_id='10001')
+        with self.assertRaisesMessage(expected_exception=IntegrityError,
+                                      expected_message='duplicate key value violates unique '
+                                                       'constraint "unique_organization_customer_id"'):
+            Contact.objects.create(organization_uuid=organization_uuid,
+                                   workflowlevel1_uuids=[str(uuid.uuid4)],
+                                   customer_id='10001')

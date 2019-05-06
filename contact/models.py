@@ -2,6 +2,8 @@ import uuid
 
 from django.contrib.postgres.fields import ArrayField, HStoreField
 from django.contrib.postgres.indexes import GinIndex
+from django.db.models import Q
+from django.db.models.constraints import UniqueConstraint
 from django.db import models
 from django.utils import timezone
 
@@ -136,5 +138,12 @@ class Contact(models.Model):
     class Meta:
         indexes = [
             GinIndex(fields=['workflowlevel1_uuids']),
-            GinIndex(fields=['workflowlevel2_uuids'])
+            GinIndex(fields=['workflowlevel2_uuids']),
+        ]
+        constraints = [
+            UniqueConstraint(
+                name='unique_organization_customer_id',
+                fields=['organization_uuid', 'customer_id'],
+                condition=~Q(customer_id=None)
+            )
         ]

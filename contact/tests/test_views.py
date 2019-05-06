@@ -596,6 +596,24 @@ class ContactCreateViewsTest(TestCase):
         response = view(request)
         self.assertEqual(response.status_code, 403)
 
+    def test_create_contact_invalid_customer_id(self):
+        mfactories.Contact(organization_uuid=self.organization_uuid,
+                           customer_id='10001')
+        data = {
+            'workflowlevel1_uuids': [self.wflvl1],
+            'customer_id': '10001',
+        }
+
+        request = self.factory.post('', data=json.dumps(data), content_type='application/json')
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        self.assertEqual(response.status_code, 400)
+        contacts = Contact.objects.filter(organization_uuid=self.organization_uuid)
+        self.assertEqual(contacts.count(), 1)
+
 
 class ContactUpdateViewsTest(TestCase):
     def setUp(self):
