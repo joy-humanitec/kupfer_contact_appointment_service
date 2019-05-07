@@ -2,7 +2,7 @@ import logging
 
 from rest_framework import serializers
 
-from contact.serializers import ContactNameSerializer
+from contact.serializers import ContactSerializer
 from .models import Appointment, AppointmentNotification, AppointmentNote
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class AppointmentNoteSerializer(serializers.ModelSerializer):
 
 class AppointmentSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
-    contact = ContactNameSerializer(read_only=True)
+    contact = ContactSerializer(read_only=True)
     notes = AppointmentNoteSerializer(many=True, required=False)
 
     def create(self, validated_data):
