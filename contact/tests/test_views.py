@@ -653,9 +653,14 @@ class ContactUpdateViewsTest(TestCase):
     def test_update_contact(self):
         siteprofile_uuid = uuid.uuid4()
         contact = mfactories.Contact(
-            emails=[{'type': 'private', 'email': 'emil@io.io'}],
+            emails=[{
+                'type': 'private',
+                'email': 'emil@io.io',
+            }],
             organization_uuid=self.organization_uuid,
-            workflowlevel1_uuids=[self.wflvl1])
+            workflowlevel1_uuids=[self.wflvl1],
+            customer_id='123',
+        )
 
         data = {
             'first_name': 'David',
@@ -687,6 +692,7 @@ class ContactUpdateViewsTest(TestCase):
             'organization_uuid': 'ignore_this',
             'workflowlevel1_uuids': [self.wflvl1],
             'workflowlevel2_uuids': [self.wflvl2],
+            'customer_id': '123',
         }
         request = self.factory.post('', json.dumps(data),
                                     content_type='application/json')
@@ -776,6 +782,26 @@ class ContactUpdateViewsTest(TestCase):
                     'number': '67890',
                 },
             ],
+        }
+        request = self.factory.post('', data)
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'post': 'update'})
+        response = view(request, pk=contact.pk)
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_contact_fails_invalid_customer_id(self):
+        mfactories.Contact(
+            customer_id='123',
+            organization_uuid=self.organization_uuid,
+            workflowlevel1_uuids=[self.wflvl1])
+        contact = mfactories.Contact(
+            customer_id='124',
+            organization_uuid=self.organization_uuid,
+            workflowlevel1_uuids=[self.wflvl1])
+
+        data = {
+            'customer_id': '123',
         }
         request = self.factory.post('', data)
         request.user = self.user
