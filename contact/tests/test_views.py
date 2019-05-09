@@ -1,6 +1,7 @@
 import json
 import uuid
 
+from django.db import transaction, IntegrityError
 from django.test import TestCase
 
 from rest_framework.test import APIRequestFactory
@@ -608,8 +609,11 @@ class ContactCreateViewsTest(TestCase):
         request.user = self.user
         request.session = self.session
         view = ContactViewSet.as_view({'post': 'create'})
-        response = view(request)
-
+        try:
+            with transaction.atomic():
+                response = view(request)
+        except IntegrityError:
+            pass
         self.assertEqual(response.status_code, 400)
         contacts = Contact.objects.filter(organization_uuid=self.organization_uuid)
         self.assertEqual(contacts.count(), 1)
