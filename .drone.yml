@@ -46,7 +46,6 @@ pipeline:
     secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
     when:
       event: [push, tag]
-      branch: [master]
       status: [success]
 
   prebuild-docker-static-image:
