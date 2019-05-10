@@ -5,7 +5,7 @@ from django.db.models import Count
 
 
 def remove_duplicate_customer_ids(apps, schema_editor):
-    """Remove duplicate customer_ids per organization by prefixing zeros."""
+    """Remove duplicate customer_ids per organization by suffixing counter."""
     contact_class = apps.get_model('contact', 'Contact')
     organizations = contact_class.objects.values(
         'organization_uuid').distinct().values_list('organization_uuid', flat=True)
@@ -15,7 +15,7 @@ def remove_duplicate_customer_ids(apps, schema_editor):
         for contact in contacts:
             dupe_contacts = contact_class.objects.filter(organization_uuid=org, customer_id=contact['customer_id'])
             for i, c in enumerate(dupe_contacts):
-                c.customer_id = i * '0' + c.customer_id
+                c.customer_id = c.customer_id + '-' + str(i)
                 c.save()
 
 
