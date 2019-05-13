@@ -7,7 +7,6 @@ services:
       - POSTGRES_DB=db
 
 pipeline:
-
   test:
     image: python:3.6
     commands:
@@ -45,8 +44,7 @@ pipeline:
     auto_tag: true
     secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
     when:
-      event: [push, tag]
-      branch: [master]
+      event: [tag]
       status: [success]
 
   prebuild-docker-static-image:
@@ -68,3 +66,4 @@ pipeline:
     when:
       event: [tag]
       status: [success]
+
