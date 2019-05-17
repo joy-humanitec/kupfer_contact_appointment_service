@@ -442,9 +442,13 @@ class Command(BaseCommand):
                 self._create_product(product_data)
 
     def parse_file(self, csv_path):
+        google_csv_delimiter = ","
+        # numbers_csv_delimiter = ";"
+        delimiter = google_csv_delimiter
+        # ToDo: find out and set delimiter dynamically
         with open(csv_path, 'rt') as csv_file:
             next(csv_file)  # skip first line
-            for row in csv.reader(csv_file, delimiter=str(";"), dialect=csv.excel_tab):
+            for row in csv.reader(csv_file, delimiter=delimiter, dialect=csv.excel_tab):
                 self.row = row
                 if not is_valid_uuid(self._col('B')):
                     print(f"{self._col('B')} DISMISSED")
