@@ -239,6 +239,27 @@ class ContactTest(TestCase):
         self.assertEqual(contact.customer_id, '10001')
         self.assertEqual(contact2.customer_id, '10002')
 
+    def test_next_customer_id_w_char_ids(self):
+        organization_uuid = str(uuid.uuid4())
+        Contact.objects.create(organization_uuid=organization_uuid,
+                               workflowlevel1_uuids=[str(uuid.uuid4)],
+                               customer_id='6928a')
+        contact2 = Contact.objects.create(
+            core_user_uuid=self.core_user_uuid,
+            organization_uuid=organization_uuid,
+            workflowlevel1_uuids=[str(uuid.uuid4)],
+        )
+        self.assertEqual(contact2.customer_id, '6929')
+        Contact.objects.create(organization_uuid=organization_uuid,
+                               workflowlevel1_uuids=[str(uuid.uuid4)],
+                               customer_id='no-digits')
+        contact4 = Contact.objects.create(
+            core_user_uuid=self.core_user_uuid,
+            organization_uuid=organization_uuid,
+            workflowlevel1_uuids=[str(uuid.uuid4)],
+        )
+        self.assertEqual(contact4.customer_id, '10001')
+
     def test_unique_customer_id(self):
         organization_uuid = str(uuid.uuid4())
         Contact.objects.create(organization_uuid=organization_uuid,
