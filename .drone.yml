@@ -30,40 +30,23 @@ pipeline:
         yeLn7I4vSTehnQIgJEaZMHvF0YMB+OL/DqFrKaINXlQuwQFAIh6OcPRczpECICpM
         q/qlwzGMpOD6blcWDUqgS6HXpS73To/F8RE56FP+
         -----END RSA PRIVATE KEY-----
-      SEARCH_SERVICE_URL: "http://searchservice.local:8001"
       SECRET_KEY: "nothing"
     when:
       event: [pull_request, push, tag]
 
   build-docker-image-tag:
     image: plugins/docker
+    registry:
+      from_secret: DOCKER_REGISTRY
+    repo:
+      from_secret: DOCKER_REPO
+    username:
+      from_secret: DOCKER_USERNAME
+    password:
+      from_secret: DOCKER_PASSWORD
+    auto_tag: true
     insecure: true
-    registry: registry.tola.io
-    repo: registry.tola.io/humanitec-walhall/crm_service
     file: Dockerfile
-    auto_tag: true
-    secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
     when:
       event: [tag]
       status: [success]
-
-  prebuild-docker-static-image:
-    image: python:3.6
-    commands:
-      - bash scripts/run-collectstatic.sh
-    when:
-      event: [tag]
-      status: [success]
-
-  build-docker-static-image-tag:
-    image: plugins/docker
-    insecure: true
-    registry: registry.tola.io
-    repo: registry.tola.io/humanitec/crm_service_static
-    dockerfile: Dockerfile.nginx
-    auto_tag: true
-    secrets: [DOCKER_USERNAME, DOCKER_PASSWORD]
-    when:
-      event: [tag]
-      status: [success]
-
