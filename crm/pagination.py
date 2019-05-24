@@ -3,7 +3,7 @@ from rest_framework.pagination import CursorPagination, LimitOffsetPagination
 
 class ContactLimitOffsetPagination(LimitOffsetPagination):
     default_limit = 50
-    max_limit = 500
+    max_limit = 7000
 
 
 class AppointmentCursorPagination(CursorPagination):
