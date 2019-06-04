@@ -43,6 +43,7 @@ class Appointment(models.Model):
         models.UUIDField(), blank=True, null=True,
         help_text='List of WorkflowLevel2s added to the appointment.')
     contact_uuid = models.UUIDField(blank=True, null=True)
+    summary = models.TextField(blank=True, help_text='Summarize the work done at the appointment.')
 
     @property
     def contact(self):
