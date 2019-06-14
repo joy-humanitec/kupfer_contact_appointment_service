@@ -1,43 +1,42 @@
 +++
-title = "Contact and Appointment service (Django)"
+title = "Contact and appointment service (Django)"
 api_url = "marketplace/kupfer-contact-appointment-service"
 +++
 
 
-# Contact and Appointment service (Django)
+# Contact and appointment service (Django)
 
 ## Summary
 
-The contact and appointment service enables your application to store contacts, appointments with multiple notes and sent notifications about appointments.
+The contact and appointment service enables your application to store contacts and appointments, store notes on appointments, and send notifications about appointments.
 
 ## REST data models
 
 ### Contact
 
-A _Contact_ can be seen as an extension of the CoreUser from Bifrost by using the ``core_user_uuid`` for creating a OneToOneRelationship.
-It can be also left blank for Contacts without a correlated CoreUser. 
+A **Contact** is a data model for an individual with common contact information. You can extend a [BiFrost CoreUser](https://docs.walhall.io/bifrost#data-model) by creating a one-to-one relationship between a Contact and a CoreUser using the `core_user_uuid` field.
 
-A _Contact_ has the following properties:
+A **Contact** has the following properties:
 
 - **uuid**: UUID of the Contact.
 - **core_user_uuid**: UUID of the related CoreUser (optional).
-- **customer_id**: Custom ID, which must be unique per organization. It will be set automatically starting at 10001.
+- **customer_id**: The Contact's customer ID, which must be unique per organization. If left blank, it will be set automatically starting from `10001`.
 - **first_name**: First name of the Contact.
 - **middle_name**: Middle name of the Contact.
 - **last_name**: Last name of the Contact.
-- **title**: Title of the Contact. Choices are: 'Mr.', 'Ms.', 'Mrs.', 'Miss' and 'Family'.
-- **suffix**: Suffix for titles like dr., prof., dr. med. etc..
+- **title**: Title of the Contact. Choices are: 'Mr.', 'Ms.', 'Mrs.', 'Miss', and 'Family'.
+- **suffix**: Suffix for titles, such as Dr., Prof., Dr. med., etc.
 - **contact_type**: Type of the Contact. Choices are: 'Customer', 'Supplier', 'Producer' and 'Personnel'.
-- **customer_type**: Type of the Contact. Choices are: 'Customer', 'Company' and 'Public'.
+- **customer_type**: Customer type of the Contact. Choices are: 'Customer', 'Company' and 'Public'.
 - **company**: Company of the Contact.
-- **addresses**: List of Addresses including a type. Choices of the type are: 'home', 'billing', 'business', 'delivery' and 'mailing'.
-- **siteprofile_uuids**: List of related UUIDs of SiteProfiles (location_service).
-- **emails**: List of E-Mails with a type. Choices of the E-Mail-Type are: 'office', 'private' and 'other'.
-- **phones**: List of phone numbers with a type. Choices of the phone type are: 'office', 'mobile', 'home' and 'fax'.
-- **notes**: Textual notes.
+- **addresses**: List of the Contact's addresses, including a type. Choices of type are: 'home', 'billing', 'business', 'delivery', and 'mailing'.
+- **siteprofile_uuids**: List of related UUIDs of SiteProfiles from the [location service](https://docs.walhall.io/marketplace/location-module/location-service).
+- **emails**: List of the Contact's email addresses, including a type. Choices of type are: 'office', 'private', and 'other'.
+- **phones**: List of the Contact's phone numbers, including a type. Choices of the phone type are: 'office', 'mobile', 'home', and 'fax'.
+- **notes**: Textual notes. (Note that these are separate from [AppointmentNotes](#appointmentnote))
 - **organization_uuid**: UUID of a related organization.
-- **workflowlevel1_uuids**: List of UUIDs of WorkflowLevel1s.
-- **workflowlevel2_uuids**: List of UUIDs of WorkflowLevel2s.
+- **workflowlevel1_uuids**: List of UUIDs of [WorkflowLevel1s](https://docs.walhall.io/bifrost#data-model).
+- **workflowlevel2_uuids**: List of UUIDs of [WorkflowLevel2s](https://docs.walhall.io/bifrost#data-model).
 - **create_date**: Timestamp when the Contact was created (set automatically).
 - **edit_date**: Timestamp, when the Contact was last modified (set automatically).
 
@@ -52,22 +51,22 @@ A _Contact_ has the following properties:
 
 ### Appointment
 
-The _Appointment_ describes a time span for invited CoreUsers or Contacts at a SiteProfile or other address.
+The _Appointment_ describes a time span for invited CoreUsers or Contacts at a specific address. This address can also be a SiteProfile from the [location service](https://docs.walhall.io/marketplace/location-module/location-service).
 
 An _Appointment_ has the following properties:
 
 - **uuid**: UUID of the Appointment.
 - **name**: Name of the Appointment.
-- **owner**: Every Appointment must have an owner. It could be a CoreUser, Contact, Organization and so on.
+- **owner**: Every Appointment must have an owner. It could be a CoreUser, Contact, or Organization.
 - **start_date**: Start date of the Appointment.
 - **end_date**: End date of the Appointment.
 - **type**: An array of types for the Appointment.
 - **address**: An address for the Appointment.
-- **siteprofile_uuid**: A UUID of a related SiteProfile.
-- **invitee_uuids**: List of CoreUser UUIDs invited to the appointment.
+- **siteprofile_uuid**: A UUID of a related [SiteProfile](https://docs.walhall.io/marketplace/location-module/location-service) where the appointment will take place.
+- **invitee_uuids**: List of UUIDs of CoreUsers invited to the Appointment.
 - **organization_uuid**: UUID of the organization that has access to the Appointment.
-- **notes**: Related AppointmentNotes.
-- **workflowlevel2_uuids**: UUID of the related WorkflowLevel2.
+- **notes**: Related [AppointmentNotes](#appointmentnote).
+- **workflowlevel2_uuids**: UUID of the related [WorkflowLevel2](https://docs.walhall.io/bifrost#data-model).
 - **contact_uuid**: UUID of a related Contact.
 - **summary**: A textual summary of the Appointment.
 
@@ -82,12 +81,12 @@ An _Appointment_ has the following properties:
 
 ### AppointmentNote
 
-The _AppointmentNote_ is a note that can be added to one or more appointments.
+An **AppointmentNote** is a note that can be added to one or more appointments.
 
-An _AppointmentNote_ has the following properties:
+An **AppointmentNote** has the following properties:
 
-- **note**: A textual representation of the note.
-- **type**: A choice of: "Primary", "Secondary", "OOO Reason", "OOO Note".
+- **note**: Text contents of the note.
+- **type**: "Primary", "Secondary", "OOO Reason", "OOO Note".
 
 #### Endpoints
 
@@ -100,8 +99,10 @@ An _AppointmentNote_ has the following properties:
 
 ### AppointmentNotification
 
-The _AppointmentNotification_ is a representation of an E-Mail sent to an E-Mail-address.
-The E-Mail will be sent on saving the _AppointmentNotification_ if ``send_notification`` is set and it was not sent before (``sent_at`` empty).
+An **AppointmentNotification** is a representation of an email sent to an email address.
+
+An email will be sent to the specified `recipient` upon saving the **AppointmentNotification** if the `send_notification` property is set, and if it is saved before the time specified in the `sent_at` property.
+
 An _AppointmentNotification_ has the following properties:
 
 - **subject**: The subject of the generated E-Mail.
@@ -124,7 +125,6 @@ An _AppointmentNotification_ has the following properties:
 
 
 [Click here for the full API documentation.](https://docs.walhall.io/api/marketplace/kupfer-contact-appointment-service)
-
 
 ## Local development
 
