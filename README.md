@@ -63,7 +63,7 @@ An _Appointment_ has the following properties:
 - **type**: An array of types for the Appointment.
 - **address**: An address for the Appointment.
 - **siteprofile_uuid**: A UUID of a related [SiteProfile](https://docs.walhall.io/marketplace/location-module/location-service) where the appointment will take place.
-- **invitee_uuids**: List of UUIDs of CoreUsers invited to the Appointment.
+- **invitee_uuids**: List of UUIDs of Contacts and/or CoreUsers invited to the Appointment.
 - **organization_uuid**: UUID of the organization that has access to the Appointment.
 - **notes**: Related [AppointmentNotes](#appointmentnote).
 - **workflowlevel2_uuids**: UUID of the related [WorkflowLevel2](https://docs.walhall.io/bifrost#data-model).
