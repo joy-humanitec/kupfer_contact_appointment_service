@@ -27,6 +27,7 @@ CONTACT_TYPE_CHOICES = (
 
 CUSTOMER_TYPE_CHOICES = (
     ('customer', 'Customer'),
+    ('contact', 'Contact'),
     ('company', 'Company'),
     ('public', 'Public'),
 )
