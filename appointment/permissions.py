@@ -38,12 +38,9 @@ class AppointmentNoteOrganizationPermission(OrganizationPermission):
                                    'as the object.')
 
 
-class AppointmentNotificationPermission(OrganizationPermission):
+class AppointmentRelatedModelPermission(OrganizationPermission):
     def has_permission(self, request, view):
-        return super(AppointmentNotificationPermission,
-                     self).has_permission(request, view)
+        return super().has_permission(request, view)
 
     def has_object_permission(self, request, view, obj):
-        return super(
-            AppointmentNotificationPermission, self).has_object_permission(
-            request, view, obj.appointment)
+        return super().has_object_permission(request, view, obj.appointment)

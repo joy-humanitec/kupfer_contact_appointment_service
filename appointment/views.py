@@ -8,7 +8,7 @@ from crm.pagination import AppointmentCursorPagination
 from .filters import AppointmentFilter
 from .models import Appointment, AppointmentNotification, AppointmentNote
 from .permissions import (OrganizationPermission,
-                          AppointmentNotificationPermission, AppointmentNoteOrganizationPermission)
+                          AppointmentRelatedModelPermission, AppointmentNoteOrganizationPermission)
 from .serializers import (AppointmentSerializer,
                           AppointmentNotificationSerializer, AppointmentNoteSerializer)
 
@@ -81,7 +81,7 @@ class AppointmentNotificationViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.OrderingFilter,)
     queryset = AppointmentNotification.objects.all()
     serializer_class = AppointmentNotificationSerializer
-    permission_classes = (AppointmentNotificationPermission,)
+    permission_classes = (AppointmentRelatedModelPermission, )
 
 
 class AppointmentNoteViewSet(mixins.RetrieveModelMixin,
