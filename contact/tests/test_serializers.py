@@ -1,6 +1,4 @@
-import uuid
 from django.test import TestCase
-from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 from rest_framework.request import Request
 
