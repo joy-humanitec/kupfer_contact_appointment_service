@@ -1,9 +1,9 @@
 import uuid
 
-from factory import DjangoModelFactory, Iterator, PostGenerationMethodCall
+from factory import DjangoModelFactory, Iterator, PostGenerationMethodCall, LazyFunction, SubFactory
 from django.contrib.auth.models import User
 
-from ..models import Contact as ContactM
+from ..models import Contact as ContactM, Type as TypeM
 
 
 class UserFactory(DjangoModelFactory):
@@ -18,7 +18,15 @@ class UserFactory(DjangoModelFactory):
     is_active = True
 
 
+class Type(DjangoModelFactory):
+    organization_uuid = LazyFunction(uuid.uuid4)
+
+    class Meta:
+        model = TypeM
+
+
 class Contact(DjangoModelFactory):
+
     class Meta:
         model = ContactM
 
@@ -26,7 +34,6 @@ class Contact(DjangoModelFactory):
     first_name = Iterator(['David', 'Nina'])
     last_name = Iterator(['Bowie', 'Simone'])
     title = Iterator(['mr', 'ms'])
-    contact_type = Iterator(['customer', 'supplier'])
     customer_type = Iterator(['customer', 'public'])
     company = Iterator(['RCA', 'Motown'])
     addresses = []
@@ -44,3 +51,4 @@ class Contact(DjangoModelFactory):
     notes = Iterator(["Bowie's notes", "Nina's notes"])
     organization_uuid = str(uuid.uuid4())
     workflowlevel1_uuids = [str(uuid.uuid4())]
+

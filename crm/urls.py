@@ -10,5 +10,6 @@ router.register(r'appointmentnotes', views_apppointment.AppointmentNoteViewSet)
 router.register(r'appointmentnotifications', views_apppointment.AppointmentNotificationViewSet)
 router.register(r'appointmentdrivingtimes', views_apppointment.AppointmentDrivingTimeViewSet)
 router.register(r'contact', views_contacts.ContactViewSet)
+router.register(r'contacttype', views_contacts.TypeViewSet)
 
 urlpatterns = router.urls
