@@ -7,6 +7,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import validate_email
+from django.db.models import CheckConstraint, Q
+from django.utils import timezone
 
 from contact.models import Contact
 
@@ -95,3 +97,20 @@ class AppointmentNotification(models.Model):
 
     def __str__(self):
         return f'{self.appointment} ({self.sent_at})'
+
+
+class AppointmentDrivingTime(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    distance = models.DecimalField(blank=True, max_digits=5, decimal_places=2, help_text="Distance in predefined unit, p.e.: km")
+    time = models.PositiveSmallIntegerField(blank=True, help_text="driving time in minutes")
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='driving_times')
+    time_point = models.DateTimeField(blank=True, null=True, help_text="Point in time when the driving took place")
+
+    def __str__(self):
+        return f'{self.appointment} - {self.distance or 0} km - {self.time or 0} minutes'
+
+    class Meta:
+        CheckConstraint(
+            name='distance_or_time_must_be_filled',
+            check=~Q(distance=None, time=None) & (~(~Q(distance=None) & ~Q(time=None)))
+        )

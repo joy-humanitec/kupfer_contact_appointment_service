@@ -1,12 +1,15 @@
+import random
 from datetime import datetime
 import pytz
 import uuid
+import factory
 
 from factory import DjangoModelFactory, Iterator, SubFactory, RelatedFactory
 
 from ..models import Appointment as AppointmentM
 from ..models import AppointmentNotification as AppointmentNotificationM
 from ..models import AppointmentNote as ApppointmentNoteM
+from ..models import AppointmentDrivingTime as AppointmentDrivingTimeM
 
 
 class AppointmentNote(DjangoModelFactory):
@@ -35,4 +38,14 @@ class AppointmentNotification(DjangoModelFactory):
     subject = 'Test Subject'
     message = 'Test Message body'
     recipient = 'test@example.org'
+    appointment = SubFactory(Appointment)
+
+
+class AppointmentDrivingTime(DjangoModelFactory):
+    distance = factory.LazyAttribute(lambda x: float(random.randrange(0, 10000)/100))
+    time = factory.LazyAttribute(lambda x: float(random.randrange(0, 120)))
+
+    class Meta:
+        model = AppointmentDrivingTimeM
+
     appointment = SubFactory(Appointment)

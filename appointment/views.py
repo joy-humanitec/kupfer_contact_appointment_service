@@ -6,11 +6,12 @@ from rest_framework.response import Response
 
 from crm.pagination import AppointmentCursorPagination
 from .filters import AppointmentFilter
-from .models import Appointment, AppointmentNotification, AppointmentNote
+from .models import Appointment, AppointmentNotification, AppointmentNote, AppointmentDrivingTime
 from .permissions import (OrganizationPermission,
-                          AppointmentNotificationPermission, AppointmentNoteOrganizationPermission)
+                          AppointmentRelatedModelPermission, AppointmentNoteOrganizationPermission)
 from .serializers import (AppointmentSerializer,
-                          AppointmentNotificationSerializer, AppointmentNoteSerializer)
+                          AppointmentNotificationSerializer, AppointmentNoteSerializer,
+                          AppointmentDrivingTimeSerializer)
 
 
 class AppointmentViewSet(viewsets.ModelViewSet):
@@ -81,7 +82,7 @@ class AppointmentNotificationViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.OrderingFilter,)
     queryset = AppointmentNotification.objects.all()
     serializer_class = AppointmentNotificationSerializer
-    permission_classes = (AppointmentNotificationPermission,)
+    permission_classes = (AppointmentRelatedModelPermission, )
 
 
 class AppointmentNoteViewSet(mixins.RetrieveModelMixin,
@@ -92,3 +93,13 @@ class AppointmentNoteViewSet(mixins.RetrieveModelMixin,
     queryset = AppointmentNote.objects.all()
     permission_classes = (AppointmentNoteOrganizationPermission, )
     serializer_class = AppointmentNoteSerializer
+
+
+class AppointmentDrivingTimeViewSet(mixins.RetrieveModelMixin,
+                                    mixins.UpdateModelMixin,
+                                    mixins.DestroyModelMixin,
+                                    viewsets.GenericViewSet):
+
+    queryset = AppointmentDrivingTime.objects.all()
+    serializer_class = AppointmentDrivingTimeSerializer
+    permission_classes = (AppointmentRelatedModelPermission, )
