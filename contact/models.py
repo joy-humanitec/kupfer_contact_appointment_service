@@ -18,15 +18,9 @@ TITLE_CHOICES = (
     ('family', 'Family'),
 )
 
-CONTACT_TYPE_CHOICES = (
-    ('customer', 'Customer'),
-    ('supplier', 'Supplier'),
-    ('producer', 'Producer'),
-    ('personnel', 'Personnel'),
-)
-
 CUSTOMER_TYPE_CHOICES = (
     ('customer', 'Customer'),
+    ('contact', 'Contact'),
     ('company', 'Company'),
     ('public', 'Public'),
 )
@@ -53,7 +47,26 @@ EMAIL_TYPE_CHOICES = (
 )
 
 
+class Type(models.Model):
+    """
+    The Type model is used to set the `contact_type` field dynamically on the Contact model
+    with custom choices per organization or global Types for all organizations.
+    """
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=128, help_text="Name of the Type")
+    organization_uuid = models.UUIDField('Organization UUID', db_index=True, help_text="UUID of the organization that has access to the Type, if it's not global.")
+    is_global = models.BooleanField(default=False,  help_text="All organizations have access to global types.")
+
+    def __str__(self):
+        return self.name
+
+
 class Contact(models.Model):
+    """
+    A Contact is a data model for an individual with common contact information.
+    You can extend a BiFrost CoreUser by creating a one-to-one relationship between a Contact and a CoreUser
+    using the `core_user_uuid` field.
+    """
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     core_user_uuid = models.UUIDField(blank=True, null=True)
     customer_id = models.CharField(max_length=32, blank=True, null=True, help_text='ID set by the customer. Must be unique in organization.')
@@ -65,10 +78,7 @@ class Contact(models.Model):
         help_text='Choices: {}'.format(
             ", ".join([kv[0] for kv in TITLE_CHOICES])))
     suffix = models.CharField(max_length=50, blank=True, help_text='Suffix for titles like dr., prof., dr. med. etc.')
-    contact_type = models.CharField(
-        max_length=30, choices=CONTACT_TYPE_CHOICES, blank=True, null=True,
-        help_text='Choices: {}'.format(
-            ", ".join([kv[0] for kv in CONTACT_TYPE_CHOICES])))
+    contact_type = models.ForeignKey(Type, blank=True, null=True, on_delete=models.SET_NULL)
     customer_type = models.CharField(
         max_length=30, choices=CUSTOMER_TYPE_CHOICES, blank=True, null=True,
         help_text='Choices: {}'.format(

@@ -485,7 +485,6 @@ class ContactCreateViewsTest(TestCase):
             'middle_name': 'José',
             'last_name': 'Iglesias',
             'title': 'mr',
-            'contact_type': 'personnel',
             'customer_type': 'customer',
             'company': 'Columbia',
             'addresses': [

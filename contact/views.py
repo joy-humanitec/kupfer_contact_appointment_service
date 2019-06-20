@@ -1,10 +1,11 @@
 from rest_framework import viewsets, filters as drf_filters
 from django_filters import rest_framework as django_filters
 
+from crm.mixins import OrganizationQuerySetWithGlobalFilterMixin, OrganizationExtensionMixin
 from crm.pagination import ContactLimitOffsetPagination
-from .models import Contact
-from .permissions import ContactPermission  # ContactPermission
-from .serializers import ContactSerializer
+from .models import Contact, Type
+from .permissions import ContactPermission
+from .serializers import ContactSerializer, TypeSerializer
 from . import filters
 
 
@@ -42,3 +43,12 @@ class ContactViewSet(viewsets.ModelViewSet):
     serializer_class = ContactSerializer
     permission_classes = (ContactPermission,)
     pagination_class = ContactLimitOffsetPagination
+
+
+class TypeViewSet(OrganizationQuerySetWithGlobalFilterMixin,
+                  OrganizationExtensionMixin,
+                  viewsets.ModelViewSet):
+
+    queryset = Type.objects.all()
+    serializer_class = TypeSerializer
+    permission_classes = (ContactPermission,)
