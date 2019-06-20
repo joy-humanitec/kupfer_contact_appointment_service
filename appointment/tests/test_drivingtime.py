@@ -20,6 +20,30 @@ class AppointmentDrivingTimeViewsBaseTest(TestCase):
         }
 
 
+class AppointmentDrivingTimeViewsCreateTest(AppointmentDrivingTimeViewsBaseTest):
+
+    def test_create_driving_time(self):
+        appointment = mfactories.Appointment(
+            owner=self.core_user_uuid,
+            organization_uuid=self.organization_uuid,
+        )
+        data = {
+            'appointment': str(appointment.pk),
+            'distance': 2.50,
+            'time': 3,
+        }
+
+        request = self.factory.post('', data)
+        request.session = self.session
+
+        view = AppointmentDrivingTimeViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["distance"], "2.50")
+        self.assertEqual(response.data["time"], 3)
+
+
 class AppointmentDrivingTimeViewsRetrieveTest(AppointmentDrivingTimeViewsBaseTest):
 
     def test_retrieve_driving_time(self):

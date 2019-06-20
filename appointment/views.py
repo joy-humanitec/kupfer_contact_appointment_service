@@ -96,6 +96,7 @@ class AppointmentNoteViewSet(mixins.RetrieveModelMixin,
 
 
 class AppointmentDrivingTimeViewSet(mixins.RetrieveModelMixin,
+                                    mixins.CreateModelMixin,
                                     mixins.UpdateModelMixin,
                                     mixins.DestroyModelMixin,
                                     viewsets.GenericViewSet):
