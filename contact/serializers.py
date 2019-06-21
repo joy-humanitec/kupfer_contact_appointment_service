@@ -13,6 +13,7 @@ class ContactSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     organization_uuid = serializers.ReadOnlyField()
     title_display = serializers.CharField(source='get_title_display', read_only=True)
+    contact_type_name = serializers.CharField(read_only=True, source='contact_type.name')
 
     class Meta:
         model = Contact

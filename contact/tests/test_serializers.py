@@ -9,22 +9,7 @@ from ..serializers import ContactSerializer, ContactNameSerializer
 class ContactSerializerTest(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-
-    def test_contains_expected_fields(self):
-        contact = mfactories.Contact()
-
-        request = self.factory.get('/')
-
-        serializer_context = {
-            'request': Request(request),
-        }
-
-        serializer = ContactSerializer(instance=contact,
-                                       context=serializer_context)
-
-        data = serializer.data
-
-        keys = [
+        self.keys = [
             'uuid',
             'id',
             'first_name',
@@ -48,7 +33,32 @@ class ContactSerializerTest(TestCase):
             'create_date',
             'edit_date',
         ]
-        self.assertEqual(set(data.keys()), set(keys))
+
+    def test_contains_expected_fields(self):
+        contact = mfactories.Contact()
+
+        request = self.factory.get('/')
+
+        serializer_context = {
+            'request': Request(request),
+        }
+
+        serializer = ContactSerializer(instance=contact,
+                                       context=serializer_context)
+
+        data = serializer.data
+
+        self.assertEqual(set(data.keys()), set(self.keys))
+
+    def test_contains_expected_fields_w_contact_type_name(self):
+        global_type = mfactories.Type(is_global=True)
+        contact = mfactories.Contact(contact_type=global_type)
+        request = self.factory.get('/')
+        serializer_context = {'request': Request(request)}
+        serializer = ContactSerializer(instance=contact, context=serializer_context)
+        data = serializer.data
+        extended_keys = self.keys + ['contact_type_name']
+        self.assertEqual(set(data.keys()), set(extended_keys))
 
     def test_title_display_field(self):
         contact = mfactories.Contact(title='mr')
