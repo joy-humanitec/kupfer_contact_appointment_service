@@ -9,11 +9,10 @@ class TypeSerializer(serializers.ModelSerializer):
         exclude = ('organization_uuid', )
 
 
-class ContactSerializer(serializers.HyperlinkedModelSerializer):
+class ContactSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     organization_uuid = serializers.ReadOnlyField()
     title_display = serializers.CharField(source='get_title_display', read_only=True)
-    contact_type = TypeSerializer(read_only=True)
 
     class Meta:
         model = Contact

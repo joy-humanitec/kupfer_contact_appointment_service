@@ -649,6 +649,26 @@ class ContactUpdateViewsTest(TestCase):
         response = view(request, pk=contact.pk)
         self.assertEqual(response.status_code, 200)
 
+    def test_update_contact_w_contact_type(self):
+        global_type = mfactories.Type(
+            is_global=True
+        )
+        contact = mfactories.Contact(
+            organization_uuid=self.organization_uuid,
+            workflowlevel1_uuids=[self.wflvl1])
+        data = {
+            'contact_type': str(global_type.uuid),
+        }
+        request = self.factory.post('', data)
+        request.user = self.user
+        request.session = self.session
+        view = ContactViewSet.as_view({'post': 'update'})
+
+        response = view(request, pk=contact.pk)
+        self.assertEqual(response.status_code, 200)
+        contact.refresh_from_db()
+        self.assertEqual(contact.contact_type, global_type)
+
     def test_update_contact(self):
         siteprofile_uuid = uuid.uuid4()
         contact = mfactories.Contact(

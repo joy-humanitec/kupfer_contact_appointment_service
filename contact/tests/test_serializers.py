@@ -36,7 +36,6 @@ class ContactSerializerTest(TestCase):
             'title',
             'title_display',
             'suffix',
-            'url',
             'phones',
             'company',
             'contact_type',
