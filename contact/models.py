@@ -69,7 +69,7 @@ class Contact(models.Model):
     """
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     core_user_uuid = models.UUIDField(blank=True, null=True)
-    customer_id = models.CharField(max_length=32, blank=True, null=True, help_text='ID set by the customer. Must be unique in organization.')
+    customer_id = models.IntegerField(blank=True, null=True, help_text='ID set by the customer. Must be unique in organization.')
     first_name = models.CharField(max_length=50, blank=True, help_text='First name', db_index=True)
     middle_name = models.CharField(max_length=50, blank=True, help_text='Middle name (not common in Germany)')
     last_name = models.CharField(max_length=50, blank=True, help_text='Surname or family name')
@@ -135,14 +135,11 @@ class Contact(models.Model):
             latest_customer_id = self.__class__.objects.filter(
                 organization_uuid=self.organization_uuid).exclude(
                 customer_id=None).order_by('-customer_id').first().customer_id
-            latest_customer_id = ''.join(x for x in latest_customer_id if x.isdigit())
-            if latest_customer_id:
-                next_customer_id = int(latest_customer_id) + 1
-            else:
-                next_customer_id = start_index
+            # latest_customer_id = ''.join(x for x in latest_customer_id if x.isdigit())
+            next_customer_id = latest_customer_id + 1 if latest_customer_id else start_index
         except AttributeError:
             next_customer_id = start_index
-        return str(next_customer_id)
+        return next_customer_id
 
     def save(self, **kwargs):
         if not self.customer_id:
