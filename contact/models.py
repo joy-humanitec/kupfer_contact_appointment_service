@@ -135,7 +135,6 @@ class Contact(models.Model):
             latest_customer_id = self.__class__.objects.filter(
                 organization_uuid=self.organization_uuid).exclude(
                 customer_id=None).order_by('-customer_id').first().customer_id
-            # latest_customer_id = ''.join(x for x in latest_customer_id if x.isdigit())
             next_customer_id = latest_customer_id + 1 if latest_customer_id else start_index
         except AttributeError:
             next_customer_id = start_index
