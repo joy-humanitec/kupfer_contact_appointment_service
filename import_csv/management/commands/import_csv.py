@@ -207,10 +207,12 @@ class Command(BaseCommand):
         """Set organization_uuid."""
         url_get_organization_uuid = URL_BIFROST + 'coreuser/'
         response = requests.get(url_get_organization_uuid,
-                                params={'username': USERNAME},
                                 headers=self.headers,
                                 timeout=TIMEOUT_SECONDS)
-        content = json.loads(response.content)[0]
+        content = None
+        for item in json.loads(response.content):
+            if item['username'] == 'admin':
+                content = item
         self.organization_uuid = content['organization']['organization_uuid']
         print(f"ORGANIZATION_UUID: {self.organization_uuid}")
 
