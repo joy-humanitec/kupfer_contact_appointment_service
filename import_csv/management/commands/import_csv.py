@@ -211,7 +211,7 @@ class Command(BaseCommand):
                                 timeout=TIMEOUT_SECONDS)
         content = None
         for item in json.loads(response.content):
-            if item['username'] == 'admin':
+            if item['username'] == USERNAME:
                 content = item
         self.organization_uuid = content['organization']['organization_uuid']
         print(f"ORGANIZATION_UUID: {self.organization_uuid}")
